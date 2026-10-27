@@ -1,0 +1,583 @@
+/* Broadsheet Newspaper Design */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    background: #faf9f6;
+    color: #171717;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.broadsheet {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 30px;
+}
+
+/* Masthead */
+.masthead {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.masthead-rule-top {
+    border-top: 1px solid #171717;
+    margin-bottom: 8px;
+}
+
+.masthead-title {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 72px;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 10px 0;
+    line-height: 1;
+}
+
+.masthead-rule-bottom {
+    border-top: 3px double #171717;
+    margin-top: 8px;
+    margin-bottom: 6px;
+}
+
+.masthead-dateline {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 0;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.edition-label {
+    font-style: normal;
+}
+
+/* Newspaper Grid */
+.newspaper-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid #171717;
+    padding-top: 20px;
+}
+
+/* Stories */
+.story {
+    position: relative;
+}
+
+.story-link {
+    text-decoration: none;
+    color: #171717;
+    display: block;
+}
+
+.story-link:hover .headline {
+    text-decoration: underline;
+}
+
+.headline {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    hyphens: auto;
+    word-break: break-word;
+}
+
+.lead-story {
+    grid-column: 1;
+    padding-right: 18px;
+    border-right: 1px solid #171717;
+}
+
+.lead-headline {
+    font-size: 48px;
+    margin: 12px 0 10px 0;
+}
+
+.secondary-column {
+    grid-column: 2;
+    padding: 0 18px;
+    border-right: 1px solid #171717;
+    display: flex;
+    flex-direction: column;
+}
+
+.secondary-story {
+    padding-bottom: 16px;
+}
+
+.column-rule {
+    border-top: 1px solid #171717;
+    margin: 12px 0;
+}
+
+.secondary-headline {
+    font-size: 28px;
+    margin: 10px 0 8px 0;
+}
+
+.tertiary-column {
+    grid-column: 3;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tertiary-story {
+    padding-bottom: 12px;
+}
+
+.tertiary-headline {
+    font-size: 21px;
+    margin: 8px 0 6px 0;
+    line-height: 1.1;
+}
+
+.additional-headline {
+    font-size: 19px;
+    margin: 6px 0 5px 0;
+    line-height: 1.12;
+}
+
+/* Images */
+.story-image {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.story-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: none;
+    filter: none;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.small-image img {
+    max-height: 180px;
+}
+
+.tiny-image {
+    margin-bottom: 6px;
+}
+
+.tiny-image img {
+    max-height: 100px;
+}
+
+/* Excerpts */
+.story-excerpt {
+    font-size: 15px;
+    line-height: 1.45;
+    text-align: justify;
+    hyphens: auto;
+    margin: 8px 0;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.small-excerpt {
+    font-size: 14px;
+    line-height: 1.42;
+    margin: 6px 0;
+}
+
+.story-byline {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 6px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.story-byline span {
+    display: inline;
+}
+
+.story-byline span:not(:last-child):after {
+    content: " • ";
+}
+
+.tiny-byline {
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+/* Rules */
+.story-rule {
+    border-top: 1px solid #171717;
+    margin: 10px 0;
+}
+
+/* Additional Section */
+.additional-section {
+    margin-top: 25px;
+}
+
+.section-rule-top {
+    border-top: 1px solid #171717;
+    margin-bottom: 15px;
+}
+
+.additional-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.additional-story {
+    padding-bottom: 12px;
+}
+
+/* Article page */
+.article-page {
+    position: relative;
+}
+
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: #ffffff;
+    border: 1px solid #000000;
+    padding: 5px 10px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 10pt;
+    text-decoration: none;
+    color: #000000;
+    z-index: 100;
+}
+
+.article-page:hover .back-button {
+    opacity: 1;
+}
+
+.back-button:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.article-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.article-header h1 {
+    font-size: 20pt;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.article-content {
+    text-align: justify;
+}
+
+.article-content h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    margin: 25px 0 15px 0;
+}
+
+.article-content h2 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 22px 0 12px 0;
+}
+
+.article-content h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin: 20px 0 10px 0;
+}
+
+.article-content p {
+    margin-bottom: 15px;
+}
+
+.article-content strong {
+    font-weight: bold;
+}
+
+.article-content em {
+    font-style: italic;
+}
+
+.article-content a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.article-content a:hover {
+    text-decoration: underline;
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+    filter: none;
+    border: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1199px) and (min-width: 700px) {
+    .newspaper-grid {
+        grid-template-columns: 1.5fr 1fr;
+    }
+    
+    .tertiary-column {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding-left: 0;
+        padding-top: 18px;
+        border-top: 1px solid #171717;
+        margin-top: 18px;
+    }
+    
+    .tertiary-story {
+        padding-right: 10px;
+    }
+    
+    .story-rule {
+        display: none;
+    }
+    
+    .masthead-title {
+        font-size: 56px;
+    }
+    
+    .lead-headline {
+        font-size: 38px;
+    }
+    
+    .secondary-headline {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 699px) {
+    .broadsheet {
+        padding: 15px 18px;
+    }
+    
+    .masthead-title {
+        font-size: 42px;
+        letter-spacing: 0.01em;
+    }
+    
+    .masthead-dateline {
+        font-size: 10px;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .newspaper-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .lead-story {
+        grid-column: 1;
+        padding-right: 0;
+        border-right: none;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #171717;
+        margin-bottom: 18px;
+    }
+    
+    .lead-headline {
+        font-size: 32px;
+    }
+    
+    .secondary-column {
+        grid-column: 1;
+        padding: 0;
+        border-right: none;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #171717;
+        margin-bottom: 18px;
+    }
+    
+    .tertiary-column {
+        grid-column: 1;
+        padding-left: 0;
+    }
+    
+    .secondary-headline {
+        font-size: 22px;
+    }
+    
+    .tertiary-headline {
+        font-size: 19px;
+    }
+    
+    .story-excerpt {
+        font-size: 14px;
+        text-align: left;
+    }
+    
+    .additional-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    body {
+        overflow-x: hidden;
+    }
+}
+
+/* Admin and User forms */
+.form-container {
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.form-container h1 {
+    font-size: 18pt;
+    margin-bottom: 30px;
+    text-align: center;
+    border-bottom: 1px solid #000000;
+    padding-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    border: 1px solid #000000;
+    background: #ffffff;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 300px;
+}
+
+.form-group textarea.markdown-editor {
+    min-height: 400px;
+    font-family: 'Courier New', monospace;
+    font-size: 10pt;
+}
+
+.btn {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+    padding: 8px 20px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.nav {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #000000;
+}
+
+.nav a {
+    color: #000000;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #000000;
+    text-align: center;
+}
+
+.message.success {
+    background: #f0f0f0;
+}
+
+.message.error {
+    background: #ffffff;
+    border-color: #000000;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #000000;
+}
+
+table th {
+    background: #f0f0f0;
+    font-weight: bold;
+}
+
+.file-list {
+    list-style: none;
+}
+
+.file-list li {
+    padding: 10px;
+    border: 1px solid #000000;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-list .file-info {
+    flex: 1;
+}
+
+.file-list .file-actions {
+    display: flex;
+    gap: 10px;
+}
