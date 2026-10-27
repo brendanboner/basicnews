@@ -33,7 +33,7 @@ $articles = getAllPublishedArticles();
             if ($count >= 1): 
                 $article = $articles[0];
             ?>
-                <article class="story lead-story center-lead">
+                <article class="story lead-story center-lead lead-article">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="story-link">
                         <?php if (isset($article['image']) && $article['image']): ?>
                             <div class="story-image lead-image-small">
@@ -41,20 +41,19 @@ $articles = getAllPublishedArticles();
                             </div>
                         <?php endif; ?>
                         <h2 class="headline lead-headline"><?php echo htmlspecialchars($article['title']); ?></h2>
-                        <?php 
-                        $leadText = isset($article['excerptFull']) ? $article['excerptFull'] : (isset($article['excerptLong']) ? $article['excerptLong'] : $article['excerpt']);
-                        ?>
-                        <?php if ($leadText): ?>
-                            <p class="story-excerpt lead-excerpt"><?php echo htmlspecialchars($leadText); ?></p>
-                        <?php endif; ?>
                         <?php if ((isset($article['author']) && $article['author']) || isset($article['date'])): ?>
-                            <div class="story-byline">
+                            <div class="story-byline lead-byline">
                                 <?php if (isset($article['author']) && $article['author']): ?>
                                     <span><?php echo htmlspecialchars($article['author']); ?></span>
                                 <?php endif; ?>
                                 <?php if (isset($article['date'])): ?>
                                     <span><?php echo date('F j, Y', $article['date']); ?></span>
                                 <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (isset($article['html']) && $article['html']): ?>
+                            <div class="lead-article-body">
+                                <?php echo $article['html']; ?>
                             </div>
                         <?php endif; ?>
                     </a>

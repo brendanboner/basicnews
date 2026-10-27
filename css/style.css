@@ -65,7 +65,7 @@ body {
 /* Newspaper Grid */
 .newspaper-grid {
     display: grid;
-    grid-template-columns: 1fr 1.6fr 1fr;
+    grid-template-columns: 1fr 1.8fr 1fr;
     gap: 0;
     border-top: 1px solid #151515;
     padding-top: 16px;
@@ -121,16 +121,89 @@ body {
 }
 
 .lead-story {
-    padding: 0 16px;
+    padding: 0 18px;
     border-left: 1px solid #151515;
     border-right: 1px solid #151515;
 }
 
+.lead-article .story-link:hover .headline {
+    background: none;
+    -webkit-text-fill-color: #171717;
+    animation: none;
+}
+
 .lead-headline {
-    font-size: 48px;
-    margin: 10px 0 8px 0;
-    line-height: 0.98;
-    letter-spacing: -0.02em;
+    font-size: 52px;
+    margin: 12px 0 10px 0;
+    line-height: 0.97;
+    letter-spacing: -0.025em;
+}
+
+.lead-byline {
+    margin-bottom: 14px;
+}
+
+.lead-article-body {
+    font-size: 14.5px;
+    line-height: 1.44;
+    text-align: justify;
+    hyphens: auto;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: #151515;
+}
+
+.lead-article-body p {
+    margin-bottom: 12px;
+}
+
+.lead-article-body h1,
+.lead-article-body h2,
+.lead-article-body h3 {
+    font-weight: bold;
+    margin: 16px 0 10px 0;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+}
+
+.lead-article-body h1 { font-size: 26px; }
+.lead-article-body h2 { font-size: 22px; }
+.lead-article-body h3 { font-size: 19px; }
+
+.lead-article-body strong {
+    font-weight: bold;
+}
+
+.lead-article-body em {
+    font-style: italic;
+}
+
+.lead-article-body a {
+    color: #151515;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.lead-article-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 16px auto;
+    border: none;
+    filter: none;
+}
+
+.lead-article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 13px;
+}
+
+.lead-article-body table th,
+.lead-article-body table td {
+    border: 1px solid #151515;
+    padding: 6px 8px;
+    text-align: left;
 }
 
 .secondary-column {
