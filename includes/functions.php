@@ -98,8 +98,8 @@ function getAllPublishedArticles() {
                 $textContent = strip_tags($htmlContent);
                 $textContent = preg_replace('/\s+/u', ' ', $textContent);
                 $textContent = trim($textContent);
-                if (mb_strlen($textContent, 'UTF-8') > 200) {
-                    $excerpt = mb_substr($textContent, 0, 197, 'UTF-8') . '...';
+                if (mb_strlen($textContent, 'UTF-8') > 320) {
+                    $excerpt = mb_substr($textContent, 0, 317, 'UTF-8') . '...';
                 } else {
                     $excerpt = $textContent;
                 }
