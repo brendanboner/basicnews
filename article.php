@@ -41,17 +41,15 @@ if ($currentIndex >= 0) {
         <?php if ($prevId): ?>
             <a href="article.php?id=<?php echo urlencode($prevId); ?>" class="nav-link" title="Previous article">
                 <span class="page-turn">«</span>
-                <span>Previous</span>
             </a>
         <?php else: ?>
             <span class="nav-spacer"></span>
         <?php endif; ?>
         
-        <a href="index.php" class="home-link">Home</a>
+        <span class="nav-spacer"></span>
         
         <?php if ($nextId): ?>
             <a href="article.php?id=<?php echo urlencode($nextId); ?>" class="nav-link" title="Next article">
-                <span>Next</span>
                 <span class="page-turn">»</span>
             </a>
         <?php else: ?>
