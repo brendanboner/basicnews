@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 define('CONTENT_DIR', __DIR__ . '/../content/');
 define('USERS_DIR', __DIR__ . '/../users/');
-define('SITE_TITLE', 'BasicWeb');
+define('SITE_TITLE', 'The Daily Bonner');
 
 if (!is_dir(CONTENT_DIR)) { @mkdir(CONTENT_DIR, 0755, true); }
 if (!is_dir(USERS_DIR)) { @mkdir(USERS_DIR, 0755, true); }
