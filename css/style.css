@@ -245,21 +245,26 @@ body {
 /* Article page */
 .article-page {
     position: relative;
-    max-width: 900px;
+    width: 100%;
     margin: 0 auto;
-    padding: 40px 60px;
+    padding: 60px 10%;
     background: #faf9f6;
     color: #171717;
     font-family: Georgia, 'Times New Roman', Times, serif;
+    min-height: 100vh;
+    box-sizing: border-box;
 }
 
 .article-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 50px;
-    padding-bottom: 20px;
+    margin-bottom: 70px;
+    padding-bottom: 25px;
     border-bottom: 1px solid #171717;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .nav-link {
@@ -306,17 +311,20 @@ body {
 }
 
 .article-header {
-    margin-bottom: 50px;
+    margin-bottom: 70px;
     text-align: center;
-    padding: 0 40px;
+    padding: 0 10%;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .article-header h1 {
-    font-size: 38pt;
+    font-size: clamp(32pt, 5vw, 48pt);
     font-weight: bold;
-    margin-bottom: 18px;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+    line-height: 1.03;
+    letter-spacing: -0.04em;
     font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
@@ -347,9 +355,11 @@ body {
 .article-content {
     text-align: justify;
     hyphens: auto;
-    max-width: 750px;
+    max-width: 950px;
     margin: 0 auto;
-    padding: 0 10px;
+    padding: 0 5%;
+    font-size: 17px;
+    line-height: 1.8;
 }
 
 .article-content h1 {
