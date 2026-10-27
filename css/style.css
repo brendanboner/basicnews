@@ -216,17 +216,23 @@ body {
 /* Excerpts */
 .story-excerpt {
     font-size: 14px;
-    line-height: 1.4;
+    line-height: 1.42;
     text-align: justify;
     hyphens: auto;
-    margin: 7px 0 6px 0;
+    margin: 8px 0 7px 0;
     font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.lead-excerpt {
+    font-size: 15px;
+    line-height: 1.48;
+    margin: 10px 0 8px 0;
 }
 
 .small-excerpt {
     font-size: 13px;
-    line-height: 1.38;
-    margin: 5px 0 5px 0;
+    line-height: 1.4;
+    margin: 6px 0 6px 0;
 }
 
 .story-byline {

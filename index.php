@@ -41,8 +41,11 @@ $articles = getAllPublishedArticles();
                             </div>
                         <?php endif; ?>
                         <h2 class="headline lead-headline"><?php echo htmlspecialchars($article['title']); ?></h2>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
-                            <p class="story-excerpt"><?php echo htmlspecialchars($article['excerpt']); ?></p>
+                        <?php 
+                        $leadText = isset($article['excerptFull']) ? $article['excerptFull'] : (isset($article['excerptLong']) ? $article['excerptLong'] : $article['excerpt']);
+                        ?>
+                        <?php if ($leadText): ?>
+                            <p class="story-excerpt lead-excerpt"><?php echo htmlspecialchars($leadText); ?></p>
                         <?php endif; ?>
                         <?php if ((isset($article['author']) && $article['author']) || isset($article['date'])): ?>
                             <div class="story-byline">

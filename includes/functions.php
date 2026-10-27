@@ -94,21 +94,20 @@ function getAllPublishedArticles() {
                 if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $htmlContent, $imgMatch)) {
                     $firstImage = $imgMatch[1];
                 }
-                $excerpt = '';
                 $textContent = strip_tags($htmlContent);
                 $textContent = preg_replace('/\s+/u', ' ', $textContent);
                 $textContent = trim($textContent);
-                if (mb_strlen($textContent, 'UTF-8') > 320) {
-                    $excerpt = mb_substr($textContent, 0, 317, 'UTF-8') . '...';
-                } else {
-                    $excerpt = $textContent;
-                }
+                $excerptShort = (mb_strlen($textContent, 'UTF-8') > 200) ? mb_substr($textContent, 0, 197, 'UTF-8') . '...' : $textContent;
+                $excerptLong = (mb_strlen($textContent, 'UTF-8') > 900) ? mb_substr($textContent, 0, 897, 'UTF-8') . '...' : $textContent;
+                $excerptFull = $textContent;
                 $articles[] = array(
                     'id' => $filename,
                     'title' => isset($meta['title']) ? $meta['title'] : $filename,
                     'author' => isset($meta['author']) ? $meta['author'] : '',
                     'date' => isset($meta['date']) ? $meta['date'] : @filemtime($file),
-                    'excerpt' => $excerpt,
+                    'excerpt' => $excerptShort,
+                    'excerptLong' => $excerptLong,
+                    'excerptFull' => $excerptFull,
                     'image' => $firstImage,
                     'html' => $htmlContent
                 );
