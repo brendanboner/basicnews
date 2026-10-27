@@ -21,8 +21,17 @@ $metaFile = '';
 $title = '';
 $content = '';
 
+function generateSlug($title) {
+    $slug = strtolower($title);
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+    $slug = trim($slug, '-');
+    if (empty($slug)) {
+        $slug = 'article';
+    }
+    return $slug;
+}
+
 if (!$isNew) {
-    // Sanitize id
     if (preg_match('/[^a-zA-Z0-9_-]/', $id)) {
         $error = 'Invalid ID';
     } else {
@@ -45,17 +54,20 @@ if (!$isNew) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
     $content = $_POST['content'] ?? '';
-    $articleId = trim($_POST['article_id'] ?? '');
     
     if (empty($title)) {
         $error = 'Title required';
-    } elseif ($isNew && empty($articleId)) {
-        $error = 'Article ID required';
-    } elseif ($isNew && preg_match('/[^a-zA-Z0-9_-]/', $articleId)) {
-        $error = 'Article ID can only contain letters, numbers, hyphens, and underscores';
     } else {
         if ($isNew) {
-            $id = $articleId;
+            $datePrefix = date('Ymd');
+            $slug = generateSlug($title);
+            $baseId = $datePrefix . '-' . $slug;
+            $id = $baseId;
+            $counter = 1;
+            while (file_exists(CONTENT_DIR . $username . '_' . $id . '.md')) {
+                $id = $baseId . '-' . $counter;
+                $counter++;
+            }
             $mdFile = CONTENT_DIR . $username . '_' . $id . '.md';
             if (file_exists($mdFile)) {
                 $error = 'Article ID already exists';
@@ -71,16 +83,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'title' => $title,
                     'author' => $username,
                     'date' => time(),
-                    'published' => false
+                    'published' => false,
+                    'slug' => $id
                 );
-                // Preserve published status if editing existing
                 if (file_exists($metaFile)) {
                     $oldMeta = json_decode(file_get_contents($metaFile), true);
                     if (isset($oldMeta['published'])) {
                         $meta['published'] = $oldMeta['published'];
                     }
-                    if (isset($oldMeta['date']) && $isNew === false) {
-                        // Keep original date on edit
+                    if (isset($oldMeta['date']) && !$isNew) {
+                        $meta['date'] = $oldMeta['date'];
+                    }
+                    if (isset($oldMeta['slug'])) {
+                        $meta['slug'] = $oldMeta['slug'];
+                    } else {
+                        $meta['slug'] = $id;
                     }
                 }
                 file_put_contents($metaFile, json_encode($meta, JSON_PRETTY_PRINT));
@@ -121,19 +138,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         
         <form method="POST">
-            <?php if ($isNew): ?>
-                <div class="form-group">
-                    <label for="article_id">Article ID (URL identifier, no spaces)</label>
-                    <input type="text" id="article_id" name="article_id" required>
-                </div>
-            <?php else: ?>
-                <input type="hidden" name="article_id" value="<?php echo htmlspecialchars($id); ?>">
-            <?php endif; ?>
-            
             <div class="form-group">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($title); ?>" required>
             </div>
+            
+            <?php if (!$isNew && isset($id)): ?>
+                <div class="form-group">
+                    <label>Article ID (auto-generated)</label>
+                    <input type="text" value="<?php echo htmlspecialchars($id); ?>" disabled style="background: #f0f0f0;">
+                </div>
+            <?php endif; ?>
             
             <div class="form-group">
                 <label for="content">Markdown Content</label>

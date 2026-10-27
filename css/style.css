@@ -245,46 +245,98 @@ body {
 /* Article page */
 .article-page {
     position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 60px;
+    background: #faf9f6;
+    color: #171717;
+    font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
-.back-button {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    background: #ffffff;
-    border: 1px solid #000000;
-    padding: 5px 10px;
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 10pt;
+.article-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #171717;
+}
+
+.nav-link {
     text-decoration: none;
-    color: #000000;
-    z-index: 100;
+    color: #171717;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
-.article-page:hover .back-button {
+.nav-link:hover {
     opacity: 1;
+    text-decoration: none;
 }
 
-.back-button:hover {
-    background: #000000;
-    color: #ffffff;
+.page-turn {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.nav-spacer {
+    flex: 1;
+}
+
+.home-link {
+    text-decoration: none;
+    color: #171717;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    font-size: 13px;
+}
+
+.home-link:hover {
+    opacity: 1;
+    text-decoration: underline;
 }
 
 .article-header {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     text-align: center;
+    padding: 0 20px;
 }
 
 .article-header h1 {
-    font-size: 20pt;
+    font-size: 36pt;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.article-header h1 a {
+    color: #171717;
+    text-decoration: none;
+}
+
+.article-header h1 a:hover {
+    text-decoration: underline;
+}
+
+.article-meta {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
 }
 
 .article-content {
     text-align: justify;
+    hyphens: auto;
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 0 10px;
 }
 
 .article-content h1 {

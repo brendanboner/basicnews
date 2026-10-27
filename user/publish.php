@@ -24,31 +24,20 @@ if (file_exists($mdFile)) {
     $mdContent = file_get_contents($mdFile);
     $htmlContent = simpleMarkdown($mdContent);
     
-    // Wrap in basic HTML structure
-    $fullHtml = '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Article</title>
-</head>
-<body>
-' . $htmlContent . '
-</body>
-</html>';
+    file_put_contents($htmlFile, $htmlContent);
     
-    file_put_contents($htmlFile, $htmlContent); // Store just the content, article.php will wrap it
-    
-    // Update meta
     $meta = array(
         'title' => $id,
         'author' => $username,
         'date' => time(),
-        'published' => true
+        'published' => true,
+        'slug' => $id
     );
     if (file_exists($metaFile)) {
         $oldMeta = json_decode(file_get_contents($metaFile), true);
         if (isset($oldMeta['title'])) $meta['title'] = $oldMeta['title'];
         if (isset($oldMeta['date'])) $meta['date'] = $oldMeta['date'];
+        if (isset($oldMeta['slug'])) $meta['slug'] = $oldMeta['slug']; else $meta['slug'] = $id;
     }
     file_put_contents($metaFile, json_encode($meta, JSON_PRETTY_PRINT));
 }
