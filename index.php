@@ -26,16 +26,17 @@ $articles = getAllPublishedArticles();
     <?php if (empty($articles)): ?>
         <p style="text-align: center; font-style: italic; margin-top: 40px;">No articles published yet.</p>
     <?php else: ?>
-        <main class="newspaper-grid">
+        <main class="newspaper-grid newspaper-grid-center">
             <?php 
             $count = count($articles);
+            // Lead story is most recent (first)
             if ($count >= 1): 
                 $article = $articles[0];
             ?>
-                <article class="story lead-story">
+                <article class="story lead-story center-lead">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="story-link">
                         <?php if (isset($article['image']) && $article['image']): ?>
-                            <div class="story-image">
+                            <div class="story-image lead-image-small">
                                 <img src="<?php echo htmlspecialchars($article['image']); ?>" alt="">
                             </div>
                         <?php endif; ?>
@@ -57,7 +58,7 @@ $articles = getAllPublishedArticles();
                 </article>
             <?php endif; ?>
             
-            <div class="secondary-column">
+            <div class="secondary-column left-column">
                 <?php if ($count >= 2): 
                     $article = $articles[1];
                 ?>
@@ -117,8 +118,8 @@ $articles = getAllPublishedArticles();
             </div>
             
             <?php if ($count >= 4): ?>
-                <div class="tertiary-column">
-                    <?php for ($i = 3; $i < min($count, 7); $i++): 
+                <div class="tertiary-column right-column">
+                    <?php for ($i = 3; $i < min($count, 8); $i++): 
                         $article = $articles[$i];
                     ?>
                         <article class="story tertiary-story">
@@ -144,17 +145,17 @@ $articles = getAllPublishedArticles();
                                 <?php endif; ?>
                             </a>
                         </article>
-                        <?php if ($i < min($count, 7) - 1): ?><div class="story-rule"></div><?php endif; ?>
+                        <?php if ($i < min($count, 8) - 1): ?><div class="story-rule"></div><?php endif; ?>
                     <?php endfor; ?>
                 </div>
             <?php endif; ?>
         </main>
         
-        <?php if ($count > 7): ?>
+        <?php if ($count > 8): ?>
             <section class="additional-section">
                 <div class="section-rule-top"></div>
                 <div class="additional-grid">
-                    <?php for ($i = 7; $i < $count; $i++): 
+                    <?php for ($i = 8; $i < $count; $i++): 
                         $article = $articles[$i];
                     ?>
                         <article class="story additional-story">
