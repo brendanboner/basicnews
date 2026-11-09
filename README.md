@@ -15,10 +15,11 @@ A simple, elegant markdown-to-HTML publishing system designed for Synology NAS B
 
 ## Deployment to Synology
 
-1. Copy this entire directory to your Synology web server home directory (usually `/volume1/web/` or similar)
-2. Ensure PHP is enabled in Synology Control Panel > Web Station
-3. Set appropriate permissions (PHP needs write access to `content/`, `users/`, `config/`)
-4. Access via your Synology web address
+1. Copy/clone this directory to your Synology web server home directory (usually `/volume1/web/` or similar) and enable PHP (Web Station).
+2. Set permissions: PHP/web server needs write access to `content/`, `content/_trash/`, `cache/`, and `media/` (avoid `777`).
+3. Initialize and test (CLI): `bin/basicweb rebuild --all && bin/basicweb test`.
+4. **Security**: change the default admin password (`/admin/login.php`, `admin`/`admin`) immediately and use HTTPS. Block sensitive paths (`/.git`, `/bin`, `/config`, `/includes`, `/users`, `/content/_*`) in your web server config.
+   - Nginx: see `deploy/nginx-basicweb.conf`. **Nginx will not pick this up automatically** just because it’s in `/volume1/web` (the document root). You must include/paste it into the site’s `server {}` config (Synology Web Station/Portal/reverse proxy/nginx config) and reload nginx (`nginx -t` then reload). Rules apply to the site’s URI paths; they work for root or subpath installs when placed in the correct server block.
 
 ## Initial Setup
 
