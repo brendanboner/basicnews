@@ -48,18 +48,40 @@ define('CACHE_DIR', __DIR__ . '/../cache/');
 define('INDEX_FILE', CONTENT_DIR . '_index.json');
 define('WORKFLOW_LOG', CONTENT_DIR . '_workflow.jsonl');
 define('SITE_SETTINGS_FILE', CONTENT_DIR . '_site.json');
-function bw_site_settings() {
+function bw_site_settings($reload = false) {
     static $s = null;
-    if ($s !== null) return $s;
-    $s = array('site_title' => 'The Daily Fuckall', 'edition' => 'Late Edition');
+    if ($s !== null && !$reload) return $s;
+    $defaults = array(
+        'site_title' => 'The Daily Fuckall',
+        'edition' => 'Late Edition',
+        'theme' => 'light',
+        'font_scale' => 'normal',
+        'home_density' => 'full',
+        'spacing' => 'normal',
+    );
+    $s = $defaults;
     $f = SITE_SETTINGS_FILE;
     if (is_file($f)) {
         $j = json_decode(@file_get_contents($f), true);
         if (is_array($j)) $s = array_merge($s, $j);
     }
-    $s['site_title'] = trim((string)($s['site_title'] ?? '')) ?: 'The Daily Fuckall';
-    $s['edition'] = trim((string)($s['edition'] ?? '')) ?: 'Late Edition';
+    $s['site_title'] = trim((string)($s['site_title'] ?? '')) ?: $defaults['site_title'];
+    $s['edition'] = trim((string)($s['edition'] ?? '')) ?: $defaults['edition'];
+    $s['theme'] = in_array($s['theme'] ?? '', array('light', 'paper', 'dark'), true) ? $s['theme'] : $defaults['theme'];
+    $s['font_scale'] = in_array($s['font_scale'] ?? '', array('small', 'normal', 'large', 'xlarge'), true) ? $s['font_scale'] : $defaults['font_scale'];
+    $s['home_density'] = in_array($s['home_density'] ?? '', array('full', 'compact', 'headlines'), true) ? $s['home_density'] : $defaults['home_density'];
+    $s['spacing'] = in_array($s['spacing'] ?? '', array('tight', 'normal', 'relaxed'), true) ? $s['spacing'] : $defaults['spacing'];
     return $s;
+}
+function bw_style_body_classes($base = '') {
+    $s = bw_site_settings();
+    $classes = array();
+    if ($base !== '') $classes[] = $base;
+    $classes[] = 'bw-theme-' . $s['theme'];
+    $classes[] = 'bw-font-' . $s['font_scale'];
+    $classes[] = 'bw-home-' . $s['home_density'];
+    $classes[] = 'bw-space-' . $s['spacing'];
+    return implode(' ', array_map(function($c) { return preg_replace('/[^a-z0-9_-]/', '', $c); }, $classes));
 }
 $_bwSite = bw_site_settings();
 define('SITE_TITLE', $_bwSite['site_title']);

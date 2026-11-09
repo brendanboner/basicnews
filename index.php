@@ -1,6 +1,12 @@
 <?php
 require_once 'includes/functions.php';
 $articles = getAllPublishedArticles();
+$_bw = bw_site_settings();
+$_home = $_bw['home_density'] ?? 'full';
+$_railMax = ($_home === 'full') ? 10 : (($_home === 'compact') ? 7 : 8);
+$_bottom = ($_home === 'full');
+$_showMidExcerpts = ($_home !== 'headlines');
+$_showRailExcerpts = ($_home === 'full');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +17,7 @@ $articles = getAllPublishedArticles();
     <link rel="stylesheet" href="css/style.css">
     <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="css/custom.css"><?php endif; ?>
 </head>
-<body class="nyt">
+<body class="<?php echo htmlspecialchars(bw_style_body_classes('nyt'), ENT_QUOTES, 'UTF-8'); ?>">
     <header class="nyt-masthead">
         <div class="nyt-rule-top"></div>
         <h1 class="nyt-title"><?php echo SITE_TITLE; ?></h1>
@@ -62,7 +68,7 @@ $articles = getAllPublishedArticles();
                         </figure>
                         <?php endif; ?>
                         <h3 class="nyt-headline nyt-headline-lg"><?php echo htmlspecialchars($article['title']); ?></h3>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
+                        <?php if ($_showMidExcerpts && isset($article['excerpt']) && $article['excerpt']): ?>
                         <p class="nyt-summary"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                         <?php endif; ?>
                     </a>
@@ -74,19 +80,19 @@ $articles = getAllPublishedArticles();
                 <article class="nyt-story">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="nyt-link">
                         <h3 class="nyt-headline nyt-headline-md"><?php echo htmlspecialchars($article['title']); ?></h3>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
+                        <?php if ($_showMidExcerpts && isset($article['excerpt']) && $article['excerpt']): ?>
                         <p class="nyt-summary"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                         <?php endif; ?>
                     </a>
                 </article>
-                <div class="nyt-divider"></div>
+                <?php if ($count >= 4): ?><div class="nyt-divider"></div><?php endif; ?>
                 <?php endif; ?>
 
                 <?php if ($count >= 4): $article = $articles[3]; ?>
                 <article class="nyt-story">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="nyt-link">
                         <h3 class="nyt-headline nyt-headline-md"><?php echo htmlspecialchars($article['title']); ?></h3>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
+                        <?php if ($_showMidExcerpts && isset($article['excerpt']) && $article['excerpt']): ?>
                         <p class="nyt-summary"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                         <?php endif; ?>
                     </a>
@@ -95,27 +101,27 @@ $articles = getAllPublishedArticles();
             </section>
 
             <aside class="nyt-col nyt-col-rail">
-                <?php for ($i = 4; $i < min($count, 10); $i++): $article = $articles[$i]; ?>
+                <?php for ($i = 4; $i < min($count, $_railMax); $i++): $article = $articles[$i]; ?>
                 <article class="nyt-story nyt-story-rail">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="nyt-link">
                         <h4 class="nyt-headline nyt-headline-sm"><?php echo htmlspecialchars($article['title']); ?></h4>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
+                        <?php if ($_showRailExcerpts && isset($article['excerpt']) && $article['excerpt']): ?>
                         <p class="nyt-summary nyt-summary-sm"><?php echo htmlspecialchars($article['excerpt']); ?></p>
                         <?php endif; ?>
                     </a>
                 </article>
-                <?php if ($i < min($count, 10) - 1): ?>
+                <?php if ($i < min($count, $_railMax) - 1): ?>
                 <div class="nyt-divider-thin"></div>
                 <?php endif; ?>
                 <?php endfor; ?>
             </aside>
         </main>
 
-        <?php if ($count > 10): ?>
+        <?php if ($_bottom && $count > $_railMax): ?>
         <section class="nyt-bottom">
             <div class="nyt-rule-section"></div>
             <div class="nyt-bottom-grid">
-                <?php for ($i = 10; $i < $count; $i++): $article = $articles[$i]; ?>
+                <?php for ($i = $_railMax; $i < $count; $i++): $article = $articles[$i]; ?>
                 <article class="nyt-story">
                     <a href="article.php?id=<?php echo urlencode($article['id']); ?>" class="nyt-link">
                         <h4 class="nyt-headline nyt-headline-sm"><?php echo htmlspecialchars($article['title']); ?></h4>
@@ -126,6 +132,11 @@ $articles = getAllPublishedArticles();
                 </article>
                 <?php endfor; ?>
             </div>
+        </section>
+        <?php elseif (!$_bottom && $count > $_railMax): ?>
+        <section class="nyt-bottom-more">
+            <div class="nyt-rule-section"></div>
+            <p style="font-style:italic;font-size:13px;"><a href="article.php?id=<?php echo urlencode($articles[$_railMax]['id']); ?>" style="color:inherit;">More articles…</a></p>
         </section>
         <?php endif; ?>
     <?php endif; ?>

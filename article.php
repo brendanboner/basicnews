@@ -37,7 +37,7 @@ if ($currentIndex >= 0) {
     <link rel="stylesheet" href="css/style.css">
     <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="css/custom.css"><?php endif; ?>
 </head>
-<body class="article-page">
+<body class="<?php echo htmlspecialchars(bw_style_body_classes('article-page'), ENT_QUOTES, 'UTF-8'); ?>">
     <nav class="article-nav">
         <?php if ($prevId): ?>
             <a href="article.php?id=<?php echo urlencode($prevId); ?>" class="nav-link" title="Previous article">

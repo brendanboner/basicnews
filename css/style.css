@@ -525,9 +525,96 @@ table th {
     .article-content { max-width: none; font-size: 12pt; }
 }
 
+/* BasicWeb preset styles (admin-selectable, file-based, no deps) */
+body.bw-theme-paper, body.bw-theme-paper .article-page { background: #f6f1e7; color: #1a1814; }
+body.bw-theme-paper .nyt-link, body.bw-theme-paper .article-header h1 a,
+body.bw-theme-paper .article-content a, body.bw-theme-paper .nav-link { color: #1a1814; }
+body.bw-theme-paper .nyt-rule-top, body.bw-theme-paper .nyt-rule-thin, body.bw-theme-paper .nyt-rule-thick,
+body.bw-theme-paper .nyt-rule-section, body.bw-theme-paper .article-content blockquote,
+body.bw-theme-paper .article-content hr { border-color: #3a3428; }
+body.bw-theme-paper .nyt-grid { border-top-color: #d8cfc0; }
+body.bw-theme-paper .nyt-col-lead, body.bw-theme-paper .nyt-col-mid { border-right-color: #d8cfc0; }
+body.bw-theme-paper .nyt-divider { border-top-color: #d8cfc0; }
+body.bw-theme-paper .nyt-divider-thin, body.bw-theme-paper .article-nav, body.bw-theme-paper .article-meta { border-color: #e3daca; }
+body.bw-theme-paper .nyt-summary, body.bw-theme-paper .article-meta { color: #3f392f; }
+
+body.bw-theme-dark, body.bw-theme-dark .article-page { background: #171717; color: #e8e6e3; }
+body.bw-theme-dark .nyt-link, body.bw-theme-dark .article-header h1 a,
+body.bw-theme-dark .article-content a, body.bw-theme-dark .nav-link { color: #e8e6e3; }
+body.bw-theme-dark .nyt-rule-top, body.bw-theme-dark .nyt-rule-thin, body.bw-theme-dark .nyt-rule-thick,
+body.bw-theme-dark .nyt-rule-section, body.bw-theme-dark .article-content blockquote,
+body.bw-theme-dark .article-content hr { border-color: #e8e6e3; }
+body.bw-theme-dark .nyt-grid { border-top-color: #3a3a3a; }
+body.bw-theme-dark .nyt-col-lead, body.bw-theme-dark .nyt-col-mid { border-right-color: #3a3a3a; }
+body.bw-theme-dark .nyt-divider { border-top-color: #3a3a3a; }
+body.bw-theme-dark .nyt-divider-thin, body.bw-theme-dark .article-nav { border-color: #333; }
+body.bw-theme-dark .article-meta { color: #b8b4ad; border-top-color: #333; }
+body.bw-theme-dark .nyt-summary, body.bw-theme-dark .nyt-byline { color: #c8c4bd; }
+body.bw-theme-dark .nyt-figure img { opacity: 0.96; }
+body.bw-theme-dark .article-content table th { background: #242424; }
+body.bw-theme-dark .article-content table th, body.bw-theme-dark .article-content table td { border-color: #444; }
+
+/* Font size presets */
+body.bw-font-small { font-size: 15px; }
+body.bw-font-small .nyt-headline-xl { font-size: 32px; }
+body.bw-font-small .nyt-headline-lg { font-size: 22px; }
+body.bw-font-small .nyt-headline-md { font-size: 18px; }
+body.bw-font-small .nyt-summary { font-size: 14px; }
+body.bw-font-small .article-content { font-size: 16px; }
+body.bw-font-small .article-header h1 { font-size: 30px; }
+body.bw-font-large { font-size: 18px; }
+body.bw-font-large .nyt-headline-xl { font-size: 44px; }
+body.bw-font-large .nyt-headline-lg { font-size: 30px; }
+body.bw-font-large .nyt-headline-md { font-size: 23px; }
+body.bw-font-large .nyt-summary { font-size: 17px; }
+body.bw-font-large .article-content { font-size: 20px; line-height: 1.8; }
+body.bw-font-large .article-header h1 { font-size: 42px; }
+body.bw-font-xlarge { font-size: 20px; }
+body.bw-font-xlarge .nyt-headline-xl { font-size: 50px; }
+body.bw-font-xlarge .nyt-headline-lg { font-size: 34px; }
+body.bw-font-xlarge .nyt-headline-md { font-size: 26px; }
+body.bw-font-xlarge .nyt-headline-sm { font-size: 20px; }
+body.bw-font-xlarge .nyt-summary { font-size: 18px; }
+body.bw-font-xlarge .nyt-summary-sm { font-size: 16px; }
+body.bw-font-xlarge .article-content { font-size: 22px; line-height: 1.85; }
+body.bw-font-xlarge .article-header h1 { font-size: 46px; }
+
+/* Spacing presets */
+body.bw-space-tight .nyt { padding-top: 6px; padding-bottom: 30px; }
+body.bw-space-tight .nyt-masthead { margin-bottom: 8px; }
+body.bw-space-tight .nyt-grid { padding-top: 10px; }
+body.bw-space-tight .nyt-story { margin-bottom: 10px; }
+body.bw-space-tight .nyt-divider { margin: 10px 0; }
+body.bw-space-tight .nyt-summary { margin: 4px 0 6px; }
+body.bw-space-tight .article-page { padding-top: 22px; padding-bottom: 30px; }
+body.bw-space-tight .article-header { margin-bottom: 18px; }
+body.bw-space-tight .article-content p { margin-bottom: 12px; }
+body.bw-space-relaxed .nyt { padding-top: 18px; padding-bottom: 80px; }
+body.bw-space-relaxed .nyt-masthead { margin-bottom: 22px; }
+body.bw-space-relaxed .nyt-grid { padding-top: 22px; }
+body.bw-space-relaxed .nyt-story { margin-bottom: 22px; }
+body.bw-space-relaxed .nyt-divider { margin: 20px 0; }
+body.bw-space-relaxed .nyt-col { padding: 0 22px; }
+body.bw-space-relaxed .nyt-col-lead { padding-left: 0; }
+body.bw-space-relaxed .nyt-col-rail { padding-right: 0; }
+body.bw-space-relaxed .article-page { padding-top: 56px; padding-bottom: 70px; }
+body.bw-space-relaxed .article-header { margin-bottom: 38px; }
+body.bw-space-relaxed .article-content { line-height: 1.85; }
+body.bw-space-relaxed .article-content p { margin-bottom: 24px; }
+
+/* Homepage density */
+body.bw-home-headlines .nyt-summary, body.bw-home-headlines .nyt-bottom { display: none; }
+body.bw-home-headlines .nyt-story { margin-bottom: 10px; }
+body.bw-home-headlines .nyt-bottom-more { display: block; margin-top: 16px; }
+body.bw-home-compact .nyt-summary { font-size: 0.95em; line-height: 1.35; }
+body.bw-home-compact .nyt-figure-sm img { max-height: 140px; }
+.nyt-bottom-more { margin-top: 16px; }
+
 @media (max-width: 900px) {
     .nyt-grid { grid-template-columns: 1fr; }
     .nyt-col-lead, .nyt-col-mid { border-right: 0; padding: 0; border-bottom: 1px solid #e2e2e2; margin-bottom: 16px; padding-bottom: 16px; }
+    body.bw-theme-paper .nyt-col-lead, body.bw-theme-paper .nyt-col-mid { border-bottom-color: #d8cfc0; }
+    body.bw-theme-dark .nyt-col-lead, body.bw-theme-dark .nyt-col-mid { border-bottom-color: #3a3a3a; }
     .nyt-col-rail { padding: 0; }
     .nyt-bottom-grid { grid-template-columns: 1fr 1fr; }
     .nyt-title { font-size: 44px; }
