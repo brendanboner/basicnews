@@ -1,35 +1,50 @@
 <?php
 require_once '../config/config.php';
+require_once '../includes/functions.php';
 requireLogin();
 
-if ($_SESSION['user']['type'] !== 'user') {
-    header('Location: ../admin/index.php');
+if (!hasRole('editor')) {
+    header('Location: index.php?msg=' . urlencode('Permission denied'));
     exit;
 }
 
-$username = $_SESSION['user']['username'];
-$id = isset($_GET['id']) ? trim($_GET['id']) : '';
-
-if (preg_match('/[^a-zA-Z0-9_-]/', $id)) {
-    header('Location: index.php');
-    exit;
+$idParam = isset($_GET['id']) ? trim($_GET['id']) : '';
+$fullId = safeArticleId($idParam);
+if ($fullId === '') { header('Location: index.php'); exit; }
+if (strpos($fullId, '_') === false) {
+    foreach (glob(CONTENT_DIR . '*/meta.json') as $mf) {
+        $fid = basename(dirname($mf));
+        if ($fid !== '' && $fid[0] !== '_' && articleSlugId($fid) === $fullId) { $fullId = $fid; break; }
+    }
+    if (strpos($fullId, '_') === false) {
+        $matches = glob(CONTENT_DIR . '*_' . $fullId . '.md');
+        if (count($matches) === 1) $fullId = basename($matches[0], '.md');
+    }
 }
 
-$htmlFile = CONTENT_DIR . $username . '_' . $id . '.html';
-$metaFile = CONTENT_DIR . $username . '_' . $id . '.meta.json';
-
-// Remove published HTML
-if (file_exists($htmlFile)) {
-    unlink($htmlFile);
+$meta = readArticleMeta($fullId);
+if (!$meta) {
+    $lm = CONTENT_DIR . $fullId . '.meta.json';
+    $meta = file_exists($lm) ? json_decode(@file_get_contents($lm), true) : null;
 }
-
-// Update meta
-if (file_exists($metaFile)) {
-    $meta = json_decode(file_get_contents($metaFile), true);
+if (is_array($meta) || file_exists(articleMetaPath($fullId)) || file_exists(CONTENT_DIR . $fullId . '.meta.json')) {
+    if (!is_array($meta)) $meta = readArticleMeta($fullId) ?: array();
+    saveVersion($fullId);
+    $htmlFile = articleHtmlPath($fullId);
+    if (file_exists($htmlFile)) @unlink($htmlFile);
+    $legacyHtml = CONTENT_DIR . $fullId . '.html';
+    if (file_exists($legacyHtml)) @unlink($legacyHtml);
+    $from = $meta['status'] ?? 'published';
+    $meta['fullId'] = $fullId;
     $meta['published'] = false;
-    file_put_contents($metaFile, json_encode($meta, JSON_PRETTY_PRINT));
+    $meta['status'] = 'draft';
+    $meta['updated'] = time();
+    ensureArticleDir($fullId);
+    writeJsonFile(articleMetaPath($fullId), $meta);
+    updateManifestForArticle($fullId, $meta);
+    appendWorkflowEvent(array('action' => 'unpublish', 'id' => $fullId, 'by' => $_SESSION['user']['username'] ?? '', 'from' => $from, 'to' => 'draft'));
 }
 
-header('Location: index.php');
+header('Location: index.php?msg=' . urlencode('Unpublished'));
 exit;
 ?>

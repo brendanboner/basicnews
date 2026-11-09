@@ -3,45 +3,54 @@ require_once '../config/config.php';
 require_once '../includes/functions.php';
 requireLogin();
 
-if ($_SESSION['user']['type'] !== 'user') {
-    header('Location: ../admin/index.php');
+if (!hasRole('editor')) {
+    header('Location: index.php?msg=' . urlencode('Permission denied'));
     exit;
 }
 
-$username = $_SESSION['user']['username'];
-$id = isset($_GET['id']) ? trim($_GET['id']) : '';
-
-if (preg_match('/[^a-zA-Z0-9_-]/', $id)) {
-    header('Location: index.php');
-    exit;
-}
-
-$mdFile = CONTENT_DIR . $username . '_' . $id . '.md';
-$htmlFile = CONTENT_DIR . $username . '_' . $id . '.html';
-$metaFile = CONTENT_DIR . $username . '_' . $id . '.meta.json';
-
-if (file_exists($mdFile)) {
-    $mdContent = file_get_contents($mdFile);
-    $htmlContent = simpleMarkdown($mdContent);
-    
-    file_put_contents($htmlFile, $htmlContent);
-    
-    $meta = array(
-        'title' => $id,
-        'author' => $username,
-        'date' => time(),
-        'published' => true,
-        'slug' => $id
-    );
-    if (file_exists($metaFile)) {
-        $oldMeta = json_decode(file_get_contents($metaFile), true);
-        if (isset($oldMeta['title'])) $meta['title'] = $oldMeta['title'];
-        if (isset($oldMeta['date'])) $meta['date'] = $oldMeta['date'];
-        if (isset($oldMeta['slug'])) $meta['slug'] = $oldMeta['slug']; else $meta['slug'] = $id;
+$idParam = isset($_GET['id']) ? trim($_GET['id']) : '';
+$fullId = safeArticleId($idParam);
+if ($fullId === '') { header('Location: index.php'); exit; }
+if (strpos($fullId, '_') === false) {
+    foreach (glob(CONTENT_DIR . '*/meta.json') as $mf) {
+        $fid = basename(dirname($mf));
+        if ($fid !== '' && $fid[0] !== '_' && articleSlugId($fid) === $fullId) { $fullId = $fid; break; }
     }
-    file_put_contents($metaFile, json_encode($meta, JSON_PRETTY_PRINT));
+    if (strpos($fullId, '_') === false) {
+        $matches = glob(CONTENT_DIR . '*_' . $fullId . '.md');
+        if (count($matches) === 1) $fullId = basename($matches[0], '.md');
+    }
 }
 
-header('Location: index.php');
+$mdPath = articleMdPath($fullId);
+$legacyMd = CONTENT_DIR . $fullId . '.md';
+if (file_exists($mdPath) || file_exists($legacyMd)) {
+    saveVersion($fullId);
+    $mdContent = @file_get_contents(file_exists($mdPath) ? $mdPath : $legacyMd);
+    $htmlContent = simpleMarkdown($mdContent);
+    ensureArticleDir($fullId);
+    atomicWriteFile(articleHtmlPath($fullId), $htmlContent);
+
+    $meta = readArticleMeta($fullId);
+    if (!$meta) {
+        $lm = CONTENT_DIR . $fullId . '.meta.json';
+        $meta = file_exists($lm) ? json_decode(@file_get_contents($lm), true) : array();
+        if (!is_array($meta)) $meta = array();
+    }
+    $from = $meta['status'] ?? 'draft';
+    $meta['title'] = $meta['title'] ?? articleSlugId($fullId);
+    $meta['author'] = $meta['author'] ?? articleOwner($fullId);
+    $meta['owner'] = $meta['author'];
+    $meta['date'] = $meta['date'] ?? time();
+    $meta['updated'] = time();
+    $meta['published'] = true;
+    $meta['status'] = 'published';
+    $meta['slug'] = articleSlugId($fullId);
+    writeJsonFile(articleMetaPath($fullId), $meta);
+    updateManifestForArticle($fullId, $meta);
+    appendWorkflowEvent(array('action' => 'publish', 'id' => $fullId, 'by' => $_SESSION['user']['username'] ?? '', 'from' => $from, 'to' => 'published'));
+}
+
+header('Location: index.php?msg=' . urlencode('Published'));
 exit;
 ?>

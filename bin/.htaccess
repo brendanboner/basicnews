@@ -1,0 +1,2 @@
+# CLI-only directory (defense-in-depth for Apache; configure nginx to deny /bin/)
+Require all denied

@@ -439,4 +439,28 @@ table th {
 .file-list .file-actions {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
 }
+
+.image-drop-zone {
+    position: relative;
+}
+.image-drop-zone.drag-over #content {
+    outline: 2px dashed #121212;
+    background: #fafafa;
+}
+.drop-hint {
+    font-size: 11px;
+    font-style: italic;
+    color: #444;
+    margin-top: 6px;
+}
+.upload-status {
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 1.2em;
+}
+.upload-status-ok { color: #222; }
+.upload-status-error { color: #700; }
+

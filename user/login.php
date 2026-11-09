@@ -10,7 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userFile = USERS_DIR . $username . '.json';
     if (file_exists($userFile)) {
         $user = json_decode(file_get_contents($userFile), true);
-        if ($user['type'] === 'user' && password_verify($password, $user['password'])) {
+        if (is_array($user) && (($user['type'] ?? '') === 'user' || isset($user['role'])) && ($user['type'] ?? '') !== 'admin' && password_verify($password, $user['password'] ?? '')) {
+            if (!isset($user['role'])) $user['role'] = 'contributor';
             $_SESSION['user'] = $user;
             header('Location: index.php');
             exit;

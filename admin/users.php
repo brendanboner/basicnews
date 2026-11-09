@@ -5,10 +5,14 @@ requireAdmin();
 $message = '';
 $error = '';
 
+$validRoles = array('contributor', 'subeditor', 'editor');
+
 // Create user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? 'contributor';
+    if (!in_array($role, $validRoles, true)) $role = 'contributor';
     
     if (empty($username) || empty($password)) {
         $error = 'Username and password required';
@@ -24,12 +28,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
             $user = array(
                 'username' => $username,
                 'password' => password_hash($password, PASSWORD_DEFAULT),
-                'type' => 'user'
+                'type' => 'user',
+                'role' => $role
             );
             if (file_put_contents($userFile, json_encode($user, JSON_PRETTY_PRINT))) {
                 $message = 'User created successfully';
             } else {
                 $error = 'Failed to create user';
+            }
+        }
+    }
+}
+
+// Update role
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
+    $username = trim($_POST['username'] ?? '');
+    $role = $_POST['role'] ?? 'contributor';
+    if (!in_array($role, $validRoles, true)) $role = 'contributor';
+    if ($username !== '' && $username !== 'admin') {
+        $userFile = USERS_DIR . $username . '.json';
+        if (file_exists($userFile)) {
+            $user = json_decode(file_get_contents($userFile), true);
+            if (is_array($user)) {
+                $user['role'] = $role;
+                $user['type'] = 'user';
+                file_put_contents($userFile, json_encode($user, JSON_PRETTY_PRINT));
+                $message = 'Role updated for ' . $username;
             }
         }
     }
@@ -51,7 +75,8 @@ if (isset($_GET['delete'])) {
 $users = array();
 foreach (glob(USERS_DIR . '*.json') as $file) {
     $user = json_decode(file_get_contents($file), true);
-    if ($user['type'] === 'user') {
+    if (is_array($user) && ($user['type'] ?? '') === 'user') {
+        if (!isset($user['role'])) $user['role'] = 'contributor';
         $users[] = $user;
     }
 }
@@ -71,7 +96,7 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
         <a href="logout.php">Logout</a>
     </div>
     
-    <div style="max-width: 700px; margin: 0 auto;">
+    <div style="max-width: 800px; margin: 0 auto;">
         <h1 style="font-size: 18pt; margin-bottom: 30px; text-align: center; border-bottom: 1px solid #000000; padding-bottom: 10px;">Manage Users</h1>
         
         <?php if ($message): ?>
@@ -92,6 +117,14 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>
                 </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role">
+                        <option value="contributor">Contributor</option>
+                        <option value="subeditor">Subeditor</option>
+                        <option value="editor">Editor</option>
+                    </select>
+                </div>
                 <button type="submit" name="create" class="btn">Create User</button>
             </form>
         </div>
@@ -104,6 +137,7 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                 <thead>
                     <tr>
                         <th>Username</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -111,6 +145,17 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                     <?php foreach ($users as $user): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($user['username']); ?></td>
+                            <td>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="username" value="<?php echo htmlspecialchars($user['username']); ?>">
+                                    <select name="role">
+                                        <option value="contributor" <?php if (($user['role'] ?? '') === 'contributor') echo 'selected'; ?>>Contributor</option>
+                                        <option value="subeditor" <?php if (($user['role'] ?? '') === 'subeditor') echo 'selected'; ?>>Subeditor</option>
+                                        <option value="editor" <?php if (($user['role'] ?? '') === 'editor') echo 'selected'; ?>>Editor</option>
+                                    </select>
+                                    <button type="submit" name="update_role" class="btn">Update</button>
+                                </form>
+                            </td>
                             <td>
                                 <a href="users.php?delete=<?php echo urlencode($user['username']); ?>" 
                                    class="btn" 

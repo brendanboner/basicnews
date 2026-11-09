@@ -3,36 +3,16 @@ require_once '../config/config.php';
 require_once '../includes/functions.php';
 requireLogin();
 
-if ($_SESSION['user']['type'] !== 'user') {
+if (isAdmin()) {
     header('Location: ../admin/index.php');
     exit;
 }
 
 $username = $_SESSION['user']['username'];
-$message = '';
+$role = getUserRole();
+$message = isset($_GET['msg']) ? $_GET['msg'] : '';
 
-// Get user's files
-$userFiles = array();
-$files = glob(CONTENT_DIR . $username . '_*.md');
-foreach ($files as $file) {
-    $basename = basename($file, '.md');
-    $id = str_replace($username . '_', '', $basename);
-    $htmlFile = CONTENT_DIR . $username . '_' . $id . '.html';
-    $metaFile = CONTENT_DIR . $username . '_' . $id . '.meta.json';
-    
-    $meta = array('title' => $id, 'published' => false);
-    if (file_exists($metaFile)) {
-        $meta = json_decode(file_get_contents($metaFile), true);
-    }
-    
-    $userFiles[] = array(
-        'id' => $id,
-        'fullId' => $username . '_' . $id,
-        'title' => $meta['title'],
-        'published' => isset($meta['published']) && $meta['published'],
-        'date' => isset($meta['date']) ? $meta['date'] : filemtime($file)
-    );
-}
+$userArticles = getArticlesForUser($username);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,37 +26,51 @@ foreach ($files as $file) {
     <div class="nav">
         <a href="index.php">My Articles</a>
         <a href="edit.php">New Article</a>
-        <a href="logout.php">Logout</a>
+        <?php if (hasRole('subeditor')): ?><a href="review.php">Review Queue</a><?php endif; ?>
+        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a><?php endif; ?>
+        <a href="logout.php">Logout (<?php echo htmlspecialchars($username . ' / ' . $role); ?>)</a>
     </div>
     
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="font-size: 18pt; margin-bottom: 30px; text-align: center; border-bottom: 1px solid #000000; padding-bottom: 10px;">
-            My Articles - <?php echo htmlspecialchars($username); ?>
+    <div style="max-width: 900px; margin: 0 auto;">
+        <h1 style="font-size: 18pt; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px;">
+            My Articles
         </h1>
+        
+        <?php if ($message): ?><div class="message success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
         
         <p style="margin-bottom: 20px;">
             <a href="edit.php" class="btn">Create New Article</a>
         </p>
         
-        <?php if (empty($userFiles)): ?>
+        <?php if (empty($userArticles)): ?>
             <p style="font-style: italic;">No articles yet. Create your first article.</p>
         <?php else: ?>
             <ul class="file-list">
-                <?php foreach ($userFiles as $file): ?>
+                <?php foreach ($userArticles as $a): 
+                    $status = $a['status'] ?? (!empty($a['published']) ? 'published' : 'draft');
+                    $id = $a['id'] ?? articleSlugId($a['fullId']);
+                ?>
                     <li>
                         <div class="file-info">
-                            <strong><?php echo htmlspecialchars($file['title']); ?></strong><br>
+                            <strong><?php echo htmlspecialchars($a['title'] ?? $id); ?></strong><br>
                             <span style="font-size: 10pt; font-style: italic;">
-                                Status: <?php echo $file['published'] ? 'Published' : 'Draft'; ?> | 
-                                Created: <?php echo date('Y-m-d', $file['date']); ?>
+                                Status: <?php echo htmlspecialchars($status); ?>
+                                <?php if (!empty($a['date'])): ?> | <?php echo date('Y-m-d', $a['date']); ?><?php endif; ?>
+                                <?php if (!empty($a['editor_notes'])): ?><br>Note: <?php echo htmlspecialchars($a['editor_notes']); ?><?php endif; ?>
                             </span>
                         </div>
                         <div class="file-actions">
-                            <a href="edit.php?id=<?php echo urlencode($file['id']); ?>" class="btn">Edit</a>
-                            <?php if (!$file['published']): ?>
-                                <a href="publish.php?id=<?php echo urlencode($file['id']); ?>" class="btn">Publish</a>
-                            <?php else: ?>
-                                <a href="unpublish.php?id=<?php echo urlencode($file['id']); ?>" class="btn">Unpublish</a>
+                            <?php if (canEditArticle($a, $username, $role)): ?>
+                                <a href="edit.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Edit</a>
+                            <?php endif; ?>
+                            <?php if ($status === 'draft'): ?>
+                                <a href="actions.php?action=submit&id=<?php echo urlencode($a['fullId']); ?>" class="btn">Submit</a>
+                            <?php endif; ?>
+                            <?php if (hasRole('editor') && $status !== 'published'): ?>
+                                <a href="publish.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Publish</a>
+                            <?php endif; ?>
+                            <?php if (hasRole('editor') && $status === 'published'): ?>
+                                <a href="unpublish.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Unpublish</a>
                             <?php endif; ?>
                         </div>
                     </li>
