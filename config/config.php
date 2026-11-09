@@ -138,8 +138,12 @@ function requirePasswordChanged() {
     header('Location: ' . $base . 'password.php?forced=1');
     exit;
 }
-function requireLogin() { if (!isLoggedIn()) { header('Location: /user/login.php'); exit; } requirePasswordChanged(); }
-function requireAdmin() { if (!isAdmin()) { header('Location: /admin/login.php'); exit; } requirePasswordChanged(); }
+function requireLogin() { if (!isLoggedIn()) { header('Location: /login.php'); exit; } requirePasswordChanged(); }
+function requireAdmin() {
+    if (!isLoggedIn()) { header('Location: /login.php'); exit; }
+    if (!isAdmin()) { header('Location: /user/index.php'); exit; }
+    requirePasswordChanged();
+}
 function requireRole($role) { if (!hasRole($role)) { header('Location: /user/index.php'); exit; } requirePasswordChanged(); }
 function userBasePath() {
     $script = $_SERVER['SCRIPT_NAME'] ?? '';

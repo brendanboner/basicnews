@@ -18,15 +18,15 @@ A simple, elegant markdown-to-HTML publishing system designed for Synology NAS B
 1. Copy/clone this directory to your Synology web server home directory (usually `/volume1/web/` or similar) and enable PHP (Web Station).
 2. Set permissions: PHP/web server needs write access to `content/`, `content/_trash/`, `cache/`, and `media/` (avoid `777`).
 3. Initialize and test (CLI): `bin/basicweb rebuild --all && bin/basicweb test`.
-4. **Security**: change the default admin password (`/admin/login.php`, `admin`/`admin`) immediately and use HTTPS. Block sensitive paths (`/.git`, `/bin`, `/config`, `/includes`, `/users`, `/content/_*`) in your web server config.
+4. **Security**: change the default admin password (log in at `/login.php` with `admin`/`admin`, then you’ll be asked to set a new password) immediately and use HTTPS. Block sensitive paths (`/.git`, `/bin`, `/config`, `/includes`, `/users`, `/content/_*`) in your web server config.
    - Nginx: see `deploy/nginx-basicweb.conf`. **Nginx will not pick this up automatically** just because it’s in `/volume1/web` (the document root). You must include/paste it into the site’s `server {}` config (Synology Web Station/Portal/reverse proxy/nginx config) and reload nginx (`nginx -t` then reload). Rules apply to the site’s URI paths; they work for root or subpath installs when placed in the correct server block.
 
 ## Initial Setup
 
-1. Navigate to `/admin/` 
-2. Default admin credentials: username `admin`, password `admin` (change immediately!)
-3. Create user accounts
-4. Users can log in at `/user/` to create and publish articles
+1. Go to `/login.php` and sign in with the default admin account: username `admin`, password `admin`.
+2. **Change the admin password immediately** when prompted.
+3. Create user accounts from the admin area (`/admin/`).
+4. Writers, subeditors, and editors all sign in at the same `/login.php` page and are taken to the right area for their role.
 
 ## File Structure
 

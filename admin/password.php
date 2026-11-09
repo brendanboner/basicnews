@@ -1,7 +1,7 @@
 <?php
 require_once '../config/config.php';
 if (!isLoggedIn() || !isAdmin()) {
-    header('Location: login.php');
+    header('Location: ../login.php');
     exit;
 }
 

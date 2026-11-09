@@ -34,14 +34,14 @@ function isAdmin() {
 
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: /user/login.php');
+        header('Location: /login.php');
         exit;
     }
 }
 
 function requireAdmin() {
     if (!isAdmin()) {
-        header('Location: /admin/login.php');
+        header('Location: /login.php');
         exit;
     }
 }
