@@ -81,9 +81,28 @@ function hasRole($role) {
     $nr = isset($levels[$role]) ? $levels[$role] : 99;
     return $ur >= $nr;
 }
-function requireLogin() { if (!isLoggedIn()) { header('Location: /user/login.php'); exit; } }
-function requireAdmin() { if (!isAdmin()) { header('Location: /admin/login.php'); exit; } }
-function requireRole($role) { if (!hasRole($role)) { header('Location: /user/index.php'); exit; } }
+function bw_password_file_for_session() {
+    if (!isLoggedIn()) return '';
+    $u = $_SESSION['user'] ?? array();
+    $name = preg_replace('/[^a-zA-Z0-9_]/', '', (string)($u['username'] ?? ''));
+    if ($name === '') return '';
+    if (isAdmin() || $name === 'admin') return USERS_DIR . 'admin.json';
+    return USERS_DIR . $name . '.json';
+}
+function requirePasswordChanged() {
+    if (!isLoggedIn()) return;
+    if (empty($_SESSION['force_password_change'])) return;
+    $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
+    if (in_array($script, array('password.php', 'logout.php', 'login.php'), true)) return;
+    $base = isAdmin() ? '/admin/' : '/user/';
+    if (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false) $base = '';
+    elseif (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/user/') !== false) $base = '';
+    header('Location: ' . $base . 'password.php?forced=1');
+    exit;
+}
+function requireLogin() { if (!isLoggedIn()) { header('Location: /user/login.php'); exit; } requirePasswordChanged(); }
+function requireAdmin() { if (!isAdmin()) { header('Location: /admin/login.php'); exit; } requirePasswordChanged(); }
+function requireRole($role) { if (!hasRole($role)) { header('Location: /user/index.php'); exit; } requirePasswordChanged(); }
 function userBasePath() {
     $script = $_SERVER['SCRIPT_NAME'] ?? '';
     if (strpos($script, '/user/') !== false) return '';

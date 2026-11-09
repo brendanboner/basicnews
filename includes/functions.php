@@ -288,7 +288,7 @@ function getAllPublishedArticles() {
         if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $htmlContent, $imgMatch)) {
             $firstImage = $imgMatch[1];
         }
-        $textContent = strip_tags($htmlContent);
+        $textContent = html_entity_decode(strip_tags($htmlContent), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $textContent = preg_replace('/\s+/u', ' ', $textContent);
         $textContent = trim($textContent);
         $excerptShort = (mb_strlen($textContent, 'UTF-8') > 200) ? mb_substr($textContent, 0, 197, 'UTF-8') . '...' : $textContent;

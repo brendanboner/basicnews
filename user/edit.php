@@ -196,6 +196,7 @@ $notes = $meta['editor_notes'] ?? '';
         <a href="edit.php">New Article</a>
         <?php if (hasRole('subeditor')): ?><a href="review.php">Review Queue</a><?php endif; ?>
         <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a><?php endif; ?>
+        <a href="password.php">Change Password</a>
         <a href="logout.php">Logout</a>
     </div>
 

@@ -21,6 +21,7 @@ $items = getArticlesByStatus(array('submitted', 'in_review', 'approved'));
         <a href="edit.php">New Article</a>
         <a href="review.php">Review Queue</a>
         <a href="editor.php">Editor Queue</a>
+        <a href="password.php">Change Password</a>
         <a href="logout.php">Logout</a>
     </div>
     <div style="max-width:950px;margin:0 auto;">

@@ -15,7 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['user'] = $user;
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-            header('Location: index.php');
+            $_SESSION['force_password_change'] = ($password === 'admin' || password_verify('admin', $user['password'] ?? ''));
+            header('Location: ' . (!empty($_SESSION['force_password_change']) ? 'password.php?forced=1' : 'index.php'));
             exit;
         }
     }
