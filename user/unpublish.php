@@ -2,6 +2,7 @@
 require_once '../config/config.php';
 require_once '../includes/functions.php';
 requireLogin();
+bw_require_csrf();
 
 if (!hasRole('editor')) {
     header('Location: index.php?msg=' . urlencode('Permission denied'));

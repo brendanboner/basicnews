@@ -9,6 +9,7 @@ $validRoles = array('contributor', 'subeditor', 'editor');
 
 // Create user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
+    bw_require_csrf();
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'contributor';
@@ -42,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
 
 // Update role
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
+    bw_require_csrf();
     $username = trim($_POST['username'] ?? '');
     $role = $_POST['role'] ?? 'contributor';
     if (!in_array($role, $validRoles, true)) $role = 'contributor';
@@ -61,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_role'])) {
 
 // Delete user
 if (isset($_GET['delete'])) {
-    $username = $_GET['delete'];
+    bw_require_csrf();
+    $username = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$_GET['delete']);
     if ($username !== 'admin') {
         $userFile = USERS_DIR . $username . '.json';
         if (file_exists($userFile)) {
@@ -109,6 +112,7 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
         <div style="border: 1px solid #000000; padding: 20px; margin-bottom: 30px;">
             <h2 style="font-size: 14pt; margin-bottom: 15px;">Create New User</h2>
             <form method="POST">
+                <?php echo bw_csrf_field(); ?>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required>
@@ -147,6 +151,7 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                             <td><?php echo htmlspecialchars($user['username']); ?></td>
                             <td>
                                 <form method="POST" style="display:inline;">
+                                    <?php echo bw_csrf_field(); ?>
                                     <input type="hidden" name="username" value="<?php echo htmlspecialchars($user['username']); ?>">
                                     <select name="role">
                                         <option value="contributor" <?php if (($user['role'] ?? '') === 'contributor') echo 'selected'; ?>>Contributor</option>
@@ -157,7 +162,7 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                                 </form>
                             </td>
                             <td>
-                                <a href="users.php?delete=<?php echo urlencode($user['username']); ?>" 
+                                <a href="users.php?delete=<?php echo urlencode($user['username']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" 
                                    class="btn" 
                                    onclick="return confirm('Delete this user?');">Delete</a>
                             </td>

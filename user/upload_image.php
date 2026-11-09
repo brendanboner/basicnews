@@ -9,6 +9,11 @@ if (!isLoggedIn() || isAdmin()) {
     echo json_encode(array('ok' => false, 'error' => 'Not authorized'));
     exit;
 }
+if (!bw_verify_csrf()) {
+    http_response_code(403);
+    echo json_encode(array('ok' => false, 'error' => 'Invalid security token'));
+    exit;
+}
 
 $username = $_SESSION['user']['username'];
 $role = getUserRole();

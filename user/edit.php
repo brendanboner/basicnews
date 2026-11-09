@@ -76,6 +76,7 @@ if (!$isNew) {
 
 // Handle image upload (no-JS fallback)
 if (!$isNew && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_image']) && isset($_FILES['image_file'])) {
+    bw_require_csrf();
     if ($fullId === '') { $error = 'Save the article before uploading images.'; }
     else {
         $mediaDir = MEDIA_DIR . $fullId . '/';
@@ -104,6 +105,7 @@ if (!$isNew && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_ima
 
 // Save article
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_draft']) || isset($_POST['submit_review']) || isset($_POST['save']))) {
+    bw_require_csrf();
     $title = trim($_POST['title'] ?? '');
     $content = $_POST['content'] ?? '';
     $action = isset($_POST['submit_review']) ? 'submit' : 'save';
@@ -208,6 +210,7 @@ $notes = $meta['editor_notes'] ?? '';
         <?php if ($error): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
 
         <form method="POST" id="article-form">
+            <?php echo bw_csrf_field(); ?>
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($fullId); ?>">
             <div class="form-group">
                 <label for="title">Title</label>
@@ -230,7 +233,7 @@ $notes = $meta['editor_notes'] ?? '';
 
             <div class="form-group">
                 <label for="content">Markdown Content</label>
-                <div id="image-drop-zone" class="image-drop-zone" data-fullid="<?php echo htmlspecialchars($fullId); ?>" data-upload="upload_image.php">
+                <div id="image-drop-zone" class="image-drop-zone" data-fullid="<?php echo htmlspecialchars($fullId); ?>" data-upload="upload_image.php" data-csrf="<?php echo htmlspecialchars(bw_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
                     <textarea id="content" name="content" class="markdown-editor" required><?php echo htmlspecialchars($content); ?></textarea>
                     <p class="drop-hint"><?php if ($fullId): ?>Drag &amp; drop images here or paste an image (requires JavaScript). Without JavaScript, use the upload form below.<?php else: ?>Save the article first to enable drag-and-drop image uploads (requires JavaScript). You can still paste image URLs in Markdown, and the upload form appears after saving.<?php endif; ?></p>
                 </div>
@@ -250,6 +253,7 @@ $notes = $meta['editor_notes'] ?? '';
         <div style="margin-top:24px; border:1px solid #000; padding:14px;">
             <h2 style="font-size:13pt;margin-bottom:10px;">Add Image (works without JavaScript)</h2>
             <form method="POST" enctype="multipart/form-data">
+                <?php echo bw_csrf_field(); ?>
                 <input type="hidden" name="id" value="<?php echo htmlspecialchars($fullId); ?>">
                 <input type="hidden" name="title" value="<?php echo htmlspecialchars($title); ?>">
                 <textarea name="content" style="display:none;"><?php echo htmlspecialchars($content); ?></textarea>

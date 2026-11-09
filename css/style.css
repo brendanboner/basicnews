@@ -464,3 +464,76 @@ table th {
 .upload-status-ok { color: #222; }
 .upload-status-error { color: #700; }
 
+
+/* Newspaper feel enhancements (simple, no-JS) */
+.article-meta {
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+}
+.article-meta span + span::before {
+    content: " · ";
+    margin: 0 2px;
+}
+.article-content {
+    font-size: 18px;
+    line-height: 1.75;
+    max-width: 38em;
+}
+.article-content > p:first-of-type::first-letter {
+    float: left;
+    font-size: 3.4em;
+    line-height: 0.9;
+    padding: 0.06em 0.08em 0 0;
+    font-weight: 700;
+}
+.article-content blockquote {
+    margin: 24px 0 24px 8px;
+    padding: 2px 0 2px 18px;
+    border-left: 3px solid #121212;
+    color: #333;
+    font-style: italic;
+    font-size: 1.02em;
+}
+.article-content blockquote p {
+    margin-bottom: 10px;
+}
+.article-content hr {
+    border: 0;
+    border-top: 1px solid #121212;
+    margin: 28px auto;
+    width: 40%;
+}
+.article-content ul, .article-content ol {
+    margin: 0 0 18px 1.4em;
+}
+.article-content li { margin-bottom: 6px; }
+.nyt-masthead { margin-bottom: 14px; }
+.nyt-story + .nyt-divider { margin: 14px 0; }
+
+/* Print: simple broadsheet */
+@media print {
+    body { color: #000; }
+    .nyt, .article-page { max-width: none; padding: 0; }
+    .nyt-link { color: #000; }
+    .nav-link, .nyt-rule-top { opacity: 1; }
+    a[href]::after { content: ""; } /* keep clean */
+    .article-content { max-width: none; font-size: 12pt; }
+}
+
+@media (max-width: 900px) {
+    .nyt-grid { grid-template-columns: 1fr; }
+    .nyt-col-lead, .nyt-col-mid { border-right: 0; padding: 0; border-bottom: 1px solid #e2e2e2; margin-bottom: 16px; padding-bottom: 16px; }
+    .nyt-col-rail { padding: 0; }
+    .nyt-bottom-grid { grid-template-columns: 1fr 1fr; }
+    .nyt-title { font-size: 44px; }
+    .article-content { max-width: none; }
+}
+@media (max-width: 560px) {
+    .nyt-bottom-grid { grid-template-columns: 1fr; }
+    .nyt-title { font-size: 34px; }
+}

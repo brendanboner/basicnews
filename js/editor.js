@@ -9,6 +9,7 @@
 
   var fullId = zone.getAttribute('data-fullid') || '';
   var uploadUrl = zone.getAttribute('data-upload') || 'upload_image.php';
+  var csrfToken = zone.getAttribute('data-csrf') || '';
   var statusEl = document.getElementById('upload-status');
   if (!statusEl) {
     statusEl = document.createElement('p');
@@ -52,6 +53,7 @@
     setStatus('Uploading ' + (file.name || 'image') + '...', false);
     var fd = new FormData();
     fd.append('id', fullId);
+    fd.append('csrf_token', csrfToken);
     fd.append('image', file, file.name || 'image');
     fetch(uploadUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, json: j }; }); })

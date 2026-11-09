@@ -1,0 +1,10 @@
+# Block internal derived/workflow files
+<FilesMatch "^_">
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</FilesMatch>

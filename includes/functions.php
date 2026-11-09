@@ -334,16 +334,40 @@ function getArticle($id) {
     return false;
 }
 
+function bw_sanitize_markdown_url($url) {
+    // $url is already HTML-escaped in our markdown flow; decode minimally for scheme checks.
+    $u = html_entity_decode((string)$url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $u = trim($u);
+    if ($u === '') return '#';
+    if (preg_match('/[\x00-\x1f\x7f]/', $u)) return '#';
+    if (preg_match('#^(https?:|mailto:)#i', $u)) return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    if (preg_match('#^(/|\.{1,2}/|\?|#|media/|../media/)#', $u)) return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    // Block javascript:, data:, vbscript:, and other schemes.
+    if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $u)) return '#';
+    return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
 function simpleMarkdown($text) {
     $text = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    
-    // Tables
+
+    // Tables and blockquotes (line-based; note: '>' is escaped to '&gt;')
     $lines = preg_split('/\R/', $text);
     $result = '';
     $i = 0;
     $count = count($lines);
     while ($i < $count) {
         $line = $lines[$i];
+        // Blockquote: group consecutive &gt; lines
+        if (preg_match('/^\s*&gt;\s?(.*)$/', $line, $bm)) {
+            $bq = $bm[1] . "\n";
+            $i++;
+            while ($i < $count && preg_match('/^\s*&gt;\s?(.*)$/', $lines[$i], $bm2)) {
+                $bq .= $bm2[1] . "\n";
+                $i++;
+            }
+            $result .= "<blockquote>\n" . trim($bq) . "\n</blockquote>\n";
+            continue;
+        }
         if (strpos($line, '|') !== false && isset($lines[$i + 1]) && preg_match('/^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$/', $lines[$i + 1])) {
             $headerLine = trim($line, " \t\r\n");
             if ($headerLine === '') { $i++; continue; }
@@ -377,15 +401,19 @@ function simpleMarkdown($text) {
         $i++;
     }
     $text = $result;
-    
+
     $text = preg_replace('/^### (.+)$/mu', '<h3>$1</h3>', $text);
     $text = preg_replace('/^## (.+)$/mu', '<h2>$1</h2>', $text);
     $text = preg_replace('/^# (.+)$/mu', '<h1>$1</h1>', $text);
     $text = preg_replace('/\*\*(.+?)\*\*/su', '<strong>$1</strong>', $text);
     $text = preg_replace('/\*(.+?)\*/su', '<em>$1</em>', $text);
-    $text = preg_replace('/!\[([^\]]*)\]\(([^)]+)\)/u', '<img src="$2" alt="$1">', $text);
-    $text = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/u', '<a href="$2"><strong>$1</strong></a>', $text);
-    
+    $text = preg_replace_callback('/!\[([^\]]*)\]\(([^)]+)\)/u', function($m) {
+        return '<img src="' . bw_sanitize_markdown_url($m[2]) . '" alt="' . $m[1] . '">';
+    }, $text);
+    $text = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/u', function($m) {
+        return '<a href="' . bw_sanitize_markdown_url($m[2]) . '"><strong>' . $m[1] . '</strong></a>';
+    }, $text);
+
     $text = preg_replace('/\n\n+/u', "\n\n", $text);
     $paragraphs = preg_split('/\n\s*\n/u', trim($text));
     $result = '';

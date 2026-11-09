@@ -64,13 +64,13 @@ $userArticles = getArticlesForUser($username);
                                 <a href="edit.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Edit</a>
                             <?php endif; ?>
                             <?php if ($status === 'draft'): ?>
-                                <a href="actions.php?action=submit&id=<?php echo urlencode($a['fullId']); ?>" class="btn">Submit</a>
+                                <a href="actions.php?action=submit&id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn">Submit</a>
                             <?php endif; ?>
                             <?php if (hasRole('editor') && $status !== 'published'): ?>
-                                <a href="publish.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Publish</a>
+                                <a href="publish.php?id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn">Publish</a>
                             <?php endif; ?>
                             <?php if (hasRole('editor') && $status === 'published'): ?>
-                                <a href="unpublish.php?id=<?php echo urlencode($a['fullId']); ?>" class="btn">Unpublish</a>
+                                <a href="unpublish.php?id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn">Unpublish</a>
                             <?php endif; ?>
                         </div>
                     </li>

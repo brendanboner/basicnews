@@ -1,6 +1,43 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+        || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+    if (PHP_VERSION_ID >= 70300) {
+        @session_set_cookie_params(array(
+            'lifetime' => 0,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ));
+    } else {
+        @session_set_cookie_params(0, '/; samesite=Lax', '', $secure, true);
+    }
     @session_start();
+}
+
+function bw_csrf_token() {
+    if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+function bw_csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(bw_csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
+}
+function bw_verify_csrf() {
+    $token = '';
+    if (isset($_POST['csrf_token'])) $token = (string)$_POST['csrf_token'];
+    elseif (isset($_GET['csrf_token'])) $token = (string)$_GET['csrf_token'];
+    $sess = isset($_SESSION['csrf_token']) ? (string)$_SESSION['csrf_token'] : '';
+    return $token !== '' && $sess !== '' && hash_equals($sess, $token);
+}
+function bw_require_csrf() {
+    if (!bw_verify_csrf()) {
+        http_response_code(403);
+        exit('Invalid security token. Please go back and try again.');
+    }
 }
 
 define('CONTENT_DIR', __DIR__ . '/../content/');

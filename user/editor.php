@@ -43,13 +43,13 @@ $items = getArticlesByStatus(array('submitted', 'in_review', 'approved'));
                     <div class="file-actions">
                         <a class="btn" href="edit.php?id=<?php echo urlencode($fid); ?>">Edit</a>
                         <?php if (in_array($st, array('submitted','in_review'), true)): ?>
-                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=editor.php">Approve</a>
+                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=editor.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Approve</a>
                         <?php endif; ?>
                         <?php if ($st === 'approved'): ?>
-                            <a class="btn" href="actions.php?action=unapprove&id=<?php echo urlencode($fid); ?>&return=editor.php">Unapprove</a>
+                            <a class="btn" href="actions.php?action=unapprove&id=<?php echo urlencode($fid); ?>&return=editor.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Unapprove</a>
                         <?php endif; ?>
-                        <a class="btn" href="publish.php?id=<?php echo urlencode($fid); ?>">Publish</a>
-                        <form method="POST" action="actions.php?return=editor.php" style="display:inline;">
+                        <a class="btn" href="publish.php?id=<?php echo urlencode($fid); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Publish</a>
+                        <form method="POST" action="actions.php?return=editor.php" style="display:inline;"><?php echo bw_csrf_field(); ?>
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($fid); ?>">
                             <input type="hidden" name="action" value="send_back">
                             <input type="text" name="notes" placeholder="Note" style="width:120px;padding:6px;font-size:12px;">

@@ -40,6 +40,32 @@ A simple, elegant markdown-to-HTML publishing system designed for Synology NAS B
 - `css/` - Stylesheets
 - `includes/` - Shared PHP functions
 
+## How a story gets published
+
+This site uses a simple newsroom workflow. A story moves through a few clear stages, and only an editor can make it live for readers.
+
+### The story stages
+- **Draft** – You’re still writing. It isn’t ready for review, and readers can’t see it.
+- **Submitted** – You’ve sent the story to the editors. It’s waiting in the review queue.
+- **In review** – A subeditor or editor is reading and editing it.
+- **Approved** – An editor has approved it. It’s ready to publish, but readers still can’t see it until it’s published.
+- **Published** – The story is live on the website. Only published stories appear to readers.
+
+### Writing and publishing a new story
+1. **You (the writer/contributor)** write the story and **Save Draft**. When it’s ready, choose **Submit for Review**. That moves it to **Submitted**.
+2. **A subeditor or editor** reviews it. They may edit the text, add notes, or send it back to you as a **Draft** if changes are needed.
+3. **An editor** approves the story and then **publishes** it. Publishing is the step that makes it appear on the public site.
+
+### If you change a story after it’s been published
+This part matters:
+- **If an editor updates a published story:** the change can go live right away, and the published story stays on the site.
+- **If a writer (contributor) updates a published story:** the new changes do **not** stay live immediately. When you save, the story is sent back to the editors as **Submitted** and the old live version is taken down until an editor reviews the changes and publishes the story again.
+
+That way, readers only see the version that has been checked and approved.
+
+### A quick note on accounts
+If you’re using the default setup, the admin login starts as `admin` / `admin`. **Change that password right away** after you log in.
+
 ## Supported Markdown
 
 - `# Header 1`, `## Header 2`, `### Header 3`

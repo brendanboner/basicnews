@@ -7,6 +7,10 @@ if (isAdmin()) {
     header('Location: ../admin/index.php');
     exit;
 }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // Allow legacy GET only with valid CSRF token in query string.
+}
+bw_require_csrf();
 
 $username = $_SESSION['user']['username'];
 $role = getUserRole();

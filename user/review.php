@@ -45,16 +45,16 @@ $items = getArticlesByStatus(array('submitted', 'in_review'));
                     <div class="file-actions">
                         <a class="btn" href="edit.php?id=<?php echo urlencode($fid); ?>">Edit/Subedit</a>
                         <?php if (($a['status'] ?? '') === 'submitted'): ?>
-                            <a class="btn" href="actions.php?action=start_review&id=<?php echo urlencode($fid); ?>&return=review.php">Start Review</a>
+                            <a class="btn" href="actions.php?action=start_review&id=<?php echo urlencode($fid); ?>&return=review.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Start Review</a>
                         <?php endif; ?>
-                        <form method="POST" action="actions.php?return=review.php" style="display:inline;">
+                        <form method="POST" action="actions.php?return=review.php" style="display:inline;"><?php echo bw_csrf_field(); ?>
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($fid); ?>">
                             <input type="hidden" name="action" value="send_back">
                             <input type="text" name="notes" placeholder="Note (optional)" style="width:140px;padding:6px;font-size:12px;">
                             <button type="submit" class="btn">Send Back</button>
                         </form>
                         <?php if (hasRole('editor')): ?>
-                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=review.php">Approve</a>
+                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=review.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Approve</a>
                         <?php endif; ?>
                     </div>
                 </li>
