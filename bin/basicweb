@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Unified CLI entrypoint for admin tools (shell/command line only).
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CMD="${1:-help}"
+shift || true
+
+usage() {
+  cat <<'EOF'
+Usage: bin/basicweb <command> [args]
+
+Commands:
+  rebuild [--migrate] [--regenerate-html] [--cache] [--all]
+                          Rebuild manifest/index and derived artifacts (CLI only)
+  migrate                 Migrate legacy content into bundles + rebuild index
+  git-sync [message]      Commit repo/content changes via git (CLI only)
+  test [--url=BASE_URL]   Run basic deployment tests
+  help                    Show this help
+
+All admin/maintenance operations that rebuild or optimize run via this CLI, not the browser UI.
+EOF
+}
+
+case "$CMD" in
+  rebuild)
+    exec php "$DIR/rebuild.php" "$@"
+    ;;
+  migrate)
+    exec php "$DIR/rebuild.php" --migrate --cache "$@"
+    ;;
+  git-sync|git)
+    exec bash "$DIR/git-sync.sh" "$@"
+    ;;
+  test)
+    exec bash "$DIR/test-deploy.sh" "$@"
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: $CMD" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

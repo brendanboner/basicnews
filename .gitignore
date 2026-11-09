@@ -1,0 +1,11 @@
+# Runtime content/data (regenerated or site-specific)
+content/_index.json
+content/_index.json.lock
+content/_workflow.jsonl
+cache/*.json
+cache/*.html
+
+# OS/editor
+.DS_Store
+*.swp
+*~

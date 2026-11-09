@@ -1,17 +1,27 @@
-# CLI tools (shell/command line only)
+# Admin/CLI tools (shell/command line only)
 
-These scripts are intended to be run from the command line on the server (e.g. Synology SSH). They are **not** used by the browser UI.
+All admin/maintenance tools live in `bin/` and use a consistent shell entrypoint. They are **not** used by the browser UI.
 
-- `php bin/rebuild.php [--migrate] [--regenerate-html] [--cache] [--all]`
-  - Migrates legacy flat `content/*.md|html|meta.json` files into directory-per-article bundles (`content/<fullId>/`).
-  - Rebuilds `content/_index.json` (manifest/index) used for fast listings/queues.
-  - Optionally regenerates published `article.html` from Markdown.
-  - Writes `cache/published.json`.
-  - Appends a `rebuild` event to `content/_workflow.jsonl`.
-- `bash bin/git-sync.sh ["commit message"]`
-  - Commits repository/content changes via git (CLI only). Requires a git repo and `git` installed.
+## Unified command
+
+```bash
+bin/basicweb <command> [args]
+```
+
+Commands:
+- `rebuild [--migrate] [--regenerate-html] [--cache] [--all]` — rebuild manifest/index and derived artifacts.
+- `migrate` — migrate legacy flat content into bundles + rebuild index/cache.
+- `git-sync [message]` — commit repository/content changes via git (CLI only; requires `git`).
+- `test [--url=BASE_URL]` — run basic deployment tests (filesystem, PHP, config/functions, optional HTTP checks).
+
+## Implementation scripts (called by the unified command)
+- `bin/rebuild.php` — manifest rebuild/migration/HTML regeneration/cache (PHP CLI).
+- `bin/git-sync.sh` — git commit helper.
+- `bin/test-deploy.sh` — deployment test suite.
 
 ## Notes
-- The browser app updates the manifest per article; run `rebuild.php` after bulk/manual file changes or after deploying migrated content.
+- Run `bin/basicweb rebuild --all` after bulk/manual file changes or after deployment.
 - Workflow/audit log: `content/_workflow.jsonl` (append-only JSON lines).
-- Article bundles: `content/<fullId>/{article.md,meta.json,article.html,revisions/}`. Media uploads remain in `media/<fullId>/` for simple web serving. Trash: `content/_trash/`.
+- Manifest/index: `content/_index.json` (derived; rebuilt/updated via CLI/per-article logic).
+- Article bundles: `content/<fullId>/{article.md,meta.json,article.html,revisions/}`. Media uploads: `media/<fullId>/`. Trash: `content/_trash/`.
+

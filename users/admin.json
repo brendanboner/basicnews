@@ -1,5 +1,6 @@
 {
     "username": "admin",
-    "password": "$2y$12$xSRyq1pvjANKHySAVazVueKfrDYGfSJe7B7wDqNjKhtzlYxMEjn32",
-    "type": "admin"
+    "password": "$2y$12$wshb8quD2ggAXo7h1FtHyu3pVZSGXnQedaRSKy9BX4Ab5V73w9eDi",
+    "type": "admin",
+    "role": "admin"
 }

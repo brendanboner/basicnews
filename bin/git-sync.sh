@@ -16,4 +16,3 @@ if git diff --cached --quiet; then
 fi
 git commit -m "$MSG"
 echo "Committed: $MSG"
-?>
