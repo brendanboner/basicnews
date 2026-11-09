@@ -137,7 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_draft']) || iss
             }
             $status = $oldMeta['status'] ?? (!empty($oldMeta['published']) ? 'published' : 'draft');
             $fromStatus = $status;
-            if ($action === 'submit' && $status === 'draft') $status = 'submitted';
+            $wasPublished = ($status === 'published') || !empty($oldMeta['published']);
+            // Post-publication edits by non-editors return to the subeditor/editor queue.
+            if ($wasPublished && !hasRole('editor')) {
+                $status = 'submitted';
+            } elseif ($action === 'submit' && $status === 'draft') {
+                $status = 'submitted';
+            }
             $newMeta = $oldMeta;
             $newMeta['title'] = $title;
             $newMeta['author'] = $oldMeta['author'] ?? articleOwner($fullId);
@@ -149,9 +155,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_draft']) || iss
             $newMeta['published'] = ($status === 'published');
             if ($notes !== '') $newMeta['editor_notes'] = $notes;
             if (writeArticleFiles($fullId, $content, $newMeta)) {
-                appendWorkflowEvent(array('action' => ($action === 'submit' ? 'submit' : 'save'), 'id' => $fullId, 'by' => $username, 'from' => $fromStatus, 'to' => $status));
+                if ($wasPublished && !hasRole('editor')) {
+                    $htmlFile = articleHtmlPath($fullId);
+                    if (file_exists($htmlFile)) @unlink($htmlFile);
+                    $message = 'Changes saved and submitted to the editor/subeditor queue.';
+                    appendWorkflowEvent(array('action' => 'submit_revision', 'id' => $fullId, 'by' => $username, 'from' => $fromStatus, 'to' => $status));
+                } else {
+                    if ($status === 'published') {
+                        ensureArticleDir($fullId);
+                        atomicWriteFile(articleHtmlPath($fullId), simpleMarkdown($content));
+                    }
+                    appendWorkflowEvent(array('action' => ($action === 'submit' ? 'submit' : 'save'), 'id' => $fullId, 'by' => $username, 'from' => $fromStatus, 'to' => $status));
+                    $message = ($action === 'submit') ? 'Article saved and submitted for review.' : 'Saved successfully.';
+                }
                 $meta = readArticleMeta($fullId) ?: $newMeta;
-                $message = ($action === 'submit') ? 'Article saved and submitted for review.' : 'Saved successfully.';
                 $isNew = false;
             } else {
                 $error = 'Failed to save.';

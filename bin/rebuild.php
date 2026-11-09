@@ -52,8 +52,8 @@ foreach (glob(CONTENT_DIR . '*/meta.json') as $mf) {
         if ($entry) { $manifest['articles'][$fullId] = $entry; $indexed++; }
         if ($doHtml && ($meta['status'] === 'published' || !empty($meta['published'])) && file_exists(articleMdPath($fullId))) {
             $html = simpleMarkdown(@file_get_contents(articleMdPath($fullId)));
-            atomicWriteFile(articleHtmlPath($fullId), $html);
-            $htmlCount++;
+            if (atomicWriteFile(articleHtmlPath($fullId), $html)) $htmlCount++;
+            else echo " warning: failed to write html for $fullId\n";
         }
     }
 }

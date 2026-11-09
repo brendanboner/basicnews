@@ -42,16 +42,17 @@ function atomicWriteFile($path, $data) {
     if (!is_dir($dir)) @mkdir($dir, 0755, true);
     $tmp = $path . '.tmp.' . getmypid() . '.' . mt_rand(1000,9999);
     $fp = @fopen($tmp, 'wb');
-    if (!$fp) return false;
-    $ok = true;
-    if (!@flock($fp, LOCK_EX)) $ok = false;
-    if ($ok && @fwrite($fp, $data) === false) $ok = false;
-    @fflush($fp);
-    @flock($fp, LOCK_UN);
-    @fclose($fp);
-    if (!$ok) { @unlink($tmp); return false; }
-    if (!@rename($tmp, $path)) { @unlink($tmp); return @file_put_contents($path, $data) !== false; }
-    return true;
+    if ($fp) {
+        $ok = true;
+        if (!@flock($fp, LOCK_EX)) $ok = false;
+        if ($ok && @fwrite($fp, $data) === false) $ok = false;
+        @fflush($fp);
+        @flock($fp, LOCK_UN);
+        @fclose($fp);
+        if ($ok && @rename($tmp, $path)) return true;
+        @unlink($tmp);
+    }
+    return @file_put_contents($path, $data, LOCK_EX) !== false;
 }
 
 function readJsonFile($path) {
@@ -261,7 +262,8 @@ function canEditArticle($meta, $username, $role) {
     $status = $meta['status'] ?? 'draft';
     if ($role === 'admin' || $role === 'editor') return true;
     if ($role === 'subeditor' && in_array($status, array('submitted', 'in_review', 'approved'), true)) return true;
-    if ($owner === $username && in_array($status, array('draft', 'submitted'), true)) return true;
+    // Owners can edit drafts/submitted directly; published edits go back through review on save.
+    if ($owner === $username && in_array($status, array('draft', 'submitted', 'published'), true)) return true;
     return false;
 }
 
