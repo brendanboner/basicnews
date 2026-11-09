@@ -14,6 +14,7 @@ requireAdmin();
     <div class="nav">
         <a href="index.php">Admin Panel</a>
         <a href="users.php">Manage Users</a>
+        <a href="settings.php">Site Settings</a>
         <a href="password.php">Change Password</a>
         <a href="logout.php">Logout</a>
     </div>

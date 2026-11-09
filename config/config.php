@@ -47,7 +47,23 @@ define('MEDIA_DIR', __DIR__ . '/../media/');
 define('CACHE_DIR', __DIR__ . '/../cache/');
 define('INDEX_FILE', CONTENT_DIR . '_index.json');
 define('WORKFLOW_LOG', CONTENT_DIR . '_workflow.jsonl');
-define('SITE_TITLE', 'The Daily Fuckall');
+define('SITE_SETTINGS_FILE', CONTENT_DIR . '_site.json');
+function bw_site_settings() {
+    static $s = null;
+    if ($s !== null) return $s;
+    $s = array('site_title' => 'The Daily Fuckall', 'edition' => 'Late Edition');
+    $f = SITE_SETTINGS_FILE;
+    if (is_file($f)) {
+        $j = json_decode(@file_get_contents($f), true);
+        if (is_array($j)) $s = array_merge($s, $j);
+    }
+    $s['site_title'] = trim((string)($s['site_title'] ?? '')) ?: 'The Daily Fuckall';
+    $s['edition'] = trim((string)($s['edition'] ?? '')) ?: 'Late Edition';
+    return $s;
+}
+$_bwSite = bw_site_settings();
+define('SITE_TITLE', $_bwSite['site_title']);
+unset($_bwSite);
 
 if (!is_dir(CONTENT_DIR)) { @mkdir(CONTENT_DIR, 0755, true); }
 if (!is_dir(USERS_DIR)) { @mkdir(USERS_DIR, 0755, true); }

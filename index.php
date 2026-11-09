@@ -7,8 +7,9 @@ $articles = getAllPublishedArticles();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo SITE_TITLE; ?></title>
+    <title><?php echo htmlspecialchars(SITE_TITLE, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="css/style.css">
+    <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="css/custom.css"><?php endif; ?>
 </head>
 <body class="nyt">
     <header class="nyt-masthead">
@@ -17,7 +18,7 @@ $articles = getAllPublishedArticles();
         <div class="nyt-rule-thin"></div>
         <div class="nyt-subhead">
             <span class="nyt-date"><?php echo date('l, F j, Y'); ?></span>
-            <span class="nyt-edition">Late Edition</span>
+            <span class="nyt-edition"><?php echo htmlspecialchars(bw_site_settings()['edition'] ?? 'Late Edition', ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
         <div class="nyt-rule-thick"></div>
     </header>

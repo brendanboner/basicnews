@@ -22,7 +22,7 @@ $items = getArticlesByStatus(array('submitted', 'in_review'));
         <a href="index.php">My Articles</a>
         <a href="edit.php">New Article</a>
         <a href="review.php">Review Queue</a>
-        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a><?php endif; ?>
+        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a> <a href="archive.php">Archive</a><?php endif; ?>
         <a href="password.php">Change Password</a>
         <a href="logout.php">Logout</a>
     </div>
@@ -46,7 +46,7 @@ $items = getArticlesByStatus(array('submitted', 'in_review'));
                     <div class="file-actions">
                         <a class="btn" href="edit.php?id=<?php echo urlencode($fid); ?>">Edit/Subedit</a>
                         <?php if (($a['status'] ?? '') === 'submitted'): ?>
-                            <a class="btn" href="actions.php?action=start_review&id=<?php echo urlencode($fid); ?>&return=review.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Start Review</a>
+                            <a class="btn" href="actions.php?action=start_review&id=<?php echo urlencode($fid); ?>&return=review.php&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Start Review</a>
                         <?php endif; ?>
                         <form method="POST" action="actions.php?return=review.php" style="display:inline;"><?php echo bw_csrf_field(); ?>
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($fid); ?>">
@@ -55,7 +55,7 @@ $items = getArticlesByStatus(array('submitted', 'in_review'));
                             <button type="submit" class="btn">Send Back</button>
                         </form>
                         <?php if (hasRole('editor')): ?>
-                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=review.ph&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Approve</a>
+                            <a class="btn" href="actions.php?action=approve&id=<?php echo urlencode($fid); ?>&return=review.php&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>">Approve</a>
                         <?php endif; ?>
                     </div>
                 </li>

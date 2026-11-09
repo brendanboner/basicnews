@@ -160,12 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_draft']) || iss
                 if ($wasPublished && !hasRole('editor')) {
                     $htmlFile = articleHtmlPath($fullId);
                     if (file_exists($htmlFile)) @unlink($htmlFile);
+                    @unlink(CACHE_DIR . 'published.json');
                     $message = 'Changes saved and submitted to the editor/subeditor queue.';
                     appendWorkflowEvent(array('action' => 'submit_revision', 'id' => $fullId, 'by' => $username, 'from' => $fromStatus, 'to' => $status));
                 } else {
                     if ($status === 'published') {
                         ensureArticleDir($fullId);
                         atomicWriteFile(articleHtmlPath($fullId), simpleMarkdown($content));
+                        @unlink(CACHE_DIR . 'published.json');
                     }
                     appendWorkflowEvent(array('action' => ($action === 'submit' ? 'submit' : 'save'), 'id' => $fullId, 'by' => $username, 'from' => $fromStatus, 'to' => $status));
                     $message = ($action === 'submit') ? 'Article saved and submitted for review.' : 'Saved successfully.';
@@ -195,7 +197,7 @@ $notes = $meta['editor_notes'] ?? '';
         <a href="index.php">My Articles</a>
         <a href="edit.php">New Article</a>
         <?php if (hasRole('subeditor')): ?><a href="review.php">Review Queue</a><?php endif; ?>
-        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a><?php endif; ?>
+        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a> <a href="archive.php">Archive</a><?php endif; ?>
         <a href="password.php">Change Password</a>
         <a href="logout.php">Logout</a>
     </div>

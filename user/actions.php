@@ -73,11 +73,24 @@ switch ($action) {
             $meta['status'] = 'in_review'; $ok = true; $msg = 'Approval removed';
         } else { $msg = 'Permission denied'; }
         break;
+    case 'archive':
+        if (hasRole('editor')) {
+            $htmlFile = articleHtmlPath($fullId);
+            if (file_exists($htmlFile)) @unlink($htmlFile);
+            $meta['status'] = 'archived'; $meta['published'] = false; $ok = true; $msg = 'Archived';
+        } else { $msg = 'Permission denied'; }
+        break;
+    case 'unarchive':
+        if (hasRole('editor') && $status === 'archived') {
+            $meta['status'] = 'draft'; $meta['published'] = false; $ok = true; $msg = 'Restored to drafts';
+        } else { $msg = 'Permission denied'; }
+        break;
     case 'trash':
         $canTrash = hasRole('editor') || ($owner === $username && $status !== 'published');
         if ($canTrash) {
             moveToTrash($fullId);
             appendWorkflowEvent(array('action' => 'trash', 'id' => $fullId, 'by' => $username, 'from' => $status, 'to' => 'trash'));
+            @unlink(CACHE_DIR . 'published.json');
             header('Location: index.php?msg=' . urlencode('Moved to trash'));
             exit;
         }
@@ -94,10 +107,11 @@ if ($ok) {
     writeJsonFile(articleMetaPath($fullId), $meta);
     updateManifestForArticle($fullId, $meta);
     appendWorkflowEvent(array('action' => $action, 'id' => $fullId, 'by' => $username, 'from' => $status, 'to' => $meta['status'], 'notes' => $notes));
+    @unlink(CACHE_DIR . 'published.json');
 }
 
 $safeReturn = 'index.php';
-if (in_array($return, array('index.php','review.php','editor.php'), true)) $safeReturn = $return;
+if (in_array($return, array('index.php','review.php','editor.php','archive.php'), true)) $safeReturn = $return;
 header('Location: ' . $safeReturn . '?msg=' . urlencode($msg));
 exit;
 ?>

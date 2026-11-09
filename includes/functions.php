@@ -272,41 +272,58 @@ function normalizeMediaPaths($html) {
     return $html;
 }
 
+function bw_build_public_article_entry($entry, $htmlContent = null) {
+    $fullId = $entry['fullId'] ?? '';
+    if ($fullId === '') return null;
+    if ($htmlContent === null) {
+        $htmlFile = articleHtmlPath($fullId);
+        if (!file_exists($htmlFile)) return null;
+        $htmlContent = @file_get_contents($htmlFile);
+    }
+    $htmlContent = normalizeMediaPaths((string)$htmlContent);
+    $firstImage = '';
+    if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $htmlContent, $imgMatch)) {
+        $firstImage = $imgMatch[1];
+    }
+    $textContent = html_entity_decode(strip_tags($htmlContent), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $textContent = preg_replace('/\s+/u', ' ', $textContent);
+    $textContent = trim($textContent);
+    $excerptShort = (mb_strlen($textContent, 'UTF-8') > 200) ? mb_substr($textContent, 0, 197, 'UTF-8') . '...' : $textContent;
+    $excerptLong = (mb_strlen($textContent, 'UTF-8') > 900) ? mb_substr($textContent, 0, 897, 'UTF-8') . '...' : $textContent;
+    return array(
+        'id' => $fullId,
+        'title' => $entry['title'] ?? $fullId,
+        'author' => $entry['author'] ?? $entry['owner'] ?? '',
+        'date' => isset($entry['date']) ? (int)$entry['date'] : 0,
+        'excerpt' => $excerptShort,
+        'excerptLong' => $excerptLong,
+        'excerptFull' => $textContent,
+        'image' => $firstImage,
+    );
+}
+
 function getAllPublishedArticles() {
+    // Fast path: prebuilt cache (CLI: bin/basicweb rebuild --cache)
+    $cacheFile = CACHE_DIR . 'published.json';
+    if (is_file($cacheFile)) {
+        $cache = readJsonFile($cacheFile);
+        if (is_array($cache) && isset($cache['articles']) && is_array($cache['articles'])) {
+            $cached = $cache['articles'];
+            $ok = true;
+            foreach ($cached as $c) { if (!is_array($c) || !array_key_exists('excerpt', $c)) { $ok = false; break; } }
+            if ($ok) return $cached;
+        }
+    }
     $articles = array();
     $all = getAllArticles();
     foreach ($all as $entry) {
         $status = $entry['status'] ?? '';
         $published = !empty($entry['published']) || $status === 'published';
         if (!$published) continue;
-        $fullId = $entry['fullId'] ?? '';
-        $htmlFile = articleHtmlPath($fullId);
-        if (!file_exists($htmlFile)) continue;
-        $htmlContent = @file_get_contents($htmlFile);
-        $htmlContent = normalizeMediaPaths($htmlContent);
-        $firstImage = '';
-        if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $htmlContent, $imgMatch)) {
-            $firstImage = $imgMatch[1];
-        }
-        $textContent = html_entity_decode(strip_tags($htmlContent), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $textContent = preg_replace('/\s+/u', ' ', $textContent);
-        $textContent = trim($textContent);
-        $excerptShort = (mb_strlen($textContent, 'UTF-8') > 200) ? mb_substr($textContent, 0, 197, 'UTF-8') . '...' : $textContent;
-        $excerptLong = (mb_strlen($textContent, 'UTF-8') > 900) ? mb_substr($textContent, 0, 897, 'UTF-8') . '...' : $textContent;
-        $excerptFull = $textContent;
-        $articles[] = array(
-            'id' => $fullId,
-            'title' => $entry['title'] ?? $fullId,
-            'author' => $entry['author'] ?? $entry['owner'] ?? '',
-            'date' => isset($entry['date']) ? $entry['date'] : 0,
-            'excerpt' => $excerptShort,
-            'excerptLong' => $excerptLong,
-            'excerptFull' => $excerptFull,
-            'image' => $firstImage,
-            'html' => $htmlContent
-        );
+        $a = bw_build_public_article_entry($entry);
+        if ($a) $articles[] = $a;
     }
-    usort($articles, function($a, $b) { return $b['date'] - $a['date']; });
+    usort($articles, function($a, $b) { return ($b['date'] ?? 0) - ($a['date'] ?? 0); });
     return $articles;
 }
 

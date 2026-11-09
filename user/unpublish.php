@@ -44,6 +44,7 @@ if (is_array($meta) || file_exists(articleMetaPath($fullId)) || file_exists(CONT
     writeJsonFile(articleMetaPath($fullId), $meta);
     updateManifestForArticle($fullId, $meta);
     appendWorkflowEvent(array('action' => 'unpublish', 'id' => $fullId, 'by' => $_SESSION['user']['username'] ?? '', 'from' => $from, 'to' => 'draft'));
+    @unlink(CACHE_DIR . 'published.json');
 }
 
 header('Location: index.php?msg=' . urlencode('Unpublished'));

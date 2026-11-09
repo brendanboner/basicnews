@@ -50,6 +50,7 @@ if (file_exists($mdPath) || file_exists($legacyMd)) {
     writeJsonFile(articleMetaPath($fullId), $meta);
     updateManifestForArticle($fullId, $meta);
     appendWorkflowEvent(array('action' => 'publish', 'id' => $fullId, 'by' => $_SESSION['user']['username'] ?? '', 'from' => $from, 'to' => 'published'));
+    @unlink(CACHE_DIR . 'published.json');
 }
 
 header('Location: index.php?msg=' . urlencode('Published'));
