@@ -1,5 +1,6 @@
 <?php
 require_once '../config/config.php';
+require_once '../includes/ui.php';
 requireAdmin();
 
 $message = '';
@@ -89,56 +90,48 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - <?php echo SITE_TITLE; ?></title>
+    <title>Users - <?php echo bw_h(SITE_TITLE); ?></title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div class="nav">
-        <a href="index.php">Admin Panel</a>
-        <a href="users.php">Manage Users</a>
-        <a href="settings.php">Site Settings</a>
-        <a href="password.php">Change Password</a>
-        <a href="logout.php">Logout</a>
-    </div>
-    
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="font-size: 18pt; margin-bottom: 30px; text-align: center; border-bottom: 1px solid #000000; padding-bottom: 10px;">Manage Users</h1>
-        
-        <?php if ($message): ?>
-            <div class="message success"><?php echo htmlspecialchars($message); ?></div>
-        <?php endif; ?>
-        <?php if ($error): ?>
-            <div class="message error"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
-        
-        <div style="border: 1px solid #000000; padding: 20px; margin-bottom: 30px;">
-            <h2 style="font-size: 14pt; margin-bottom: 15px;">Create New User</h2>
-            <form method="POST">
-                <?php echo bw_csrf_field(); ?>
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label for="role">Role</label>
-                    <select id="role" name="role">
-                        <option value="contributor">Contributor</option>
-                        <option value="subeditor">Subeditor</option>
-                        <option value="editor">Editor</option>
-                    </select>
-                </div>
-                <button type="submit" name="create" class="btn">Create User</button>
-            </form>
-        </div>
-        
-        <h2 style="font-size: 14pt; margin-bottom: 15px;">Existing Users</h2>
+<body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
+<?php bw_admin_nav('users'); ?>
+<main class="bw-container">
+    <?php bw_page_header('Users & roles', 'Create accounts and control who can write, review, and publish stories.'); ?>
+
+    <?php if ($message): ?><div class="message success"><?php echo bw_h($message); ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="message error"><?php echo bw_h($error); ?></div><?php endif; ?>
+
+    <section class="bw-card">
+        <h2>Create a new user</h2>
+        <p class="bw-help" style="margin-bottom:14px;"><strong>Contributor</strong> writes and submits drafts. <strong>Subeditor</strong> reviews submissions. <strong>Editor</strong> approves, publishes, archives, and can rebuild the site.</p>
+        <form method="POST" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end;">
+            <?php echo bw_csrf_field(); ?>
+            <div class="form-group" style="margin:0;">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="off">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="new-password">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label for="role">Role</label>
+                <select id="role" name="role">
+                    <option value="contributor">Contributor (writer)</option>
+                    <option value="subeditor">Subeditor (reviewer)</option>
+                    <option value="editor">Editor (publisher)</option>
+                </select>
+            </div>
+            <div><button type="submit" name="create" class="btn btn-primary">Create user</button></div>
+        </form>
+    </section>
+
+    <section class="bw-card">
+        <h2>Existing users</h2>
         <?php if (empty($users)): ?>
-            <p style="font-style: italic;">No users created yet.</p>
+            <p class="bw-muted" style="font-style:italic;">No user accounts yet. Create one above.</p>
         <?php else: ?>
+            <div class="bw-table-wrap">
             <table>
                 <thead>
                     <tr>
@@ -150,29 +143,31 @@ foreach (glob(USERS_DIR . '*.json') as $file) {
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($user['username']); ?></td>
+                            <td><strong><?php echo bw_h($user['username']); ?></strong></td>
                             <td>
-                                <form method="POST" style="display:inline;">
+                                <form method="POST" class="bw-inline-form">
                                     <?php echo bw_csrf_field(); ?>
-                                    <input type="hidden" name="username" value="<?php echo htmlspecialchars($user['username']); ?>">
-                                    <select name="role">
+                                    <input type="hidden" name="username" value="<?php echo bw_h($user['username']); ?>">
+                                    <select name="role" aria-label="Role for <?php echo bw_h($user['username']); ?>">
                                         <option value="contributor" <?php if (($user['role'] ?? '') === 'contributor') echo 'selected'; ?>>Contributor</option>
                                         <option value="subeditor" <?php if (($user['role'] ?? '') === 'subeditor') echo 'selected'; ?>>Subeditor</option>
                                         <option value="editor" <?php if (($user['role'] ?? '') === 'editor') echo 'selected'; ?>>Editor</option>
                                     </select>
-                                    <button type="submit" name="update_role" class="btn">Update</button>
+                                    <button type="submit" name="update_role" class="btn btn-small">Save role</button>
                                 </form>
                             </td>
                             <td>
-                                <a href="users.php?delete=<?php echo urlencode($user['username']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" 
-                                   class="btn" 
-                                   onclick="return confirm('Delete this user?');">Delete</a>
+                                <a href="users.php?delete=<?php echo urlencode($user['username']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>"
+                                   class="btn btn-small btn-danger"
+                                   onclick="return confirm('Delete user <?php echo bw_h($user['username']); ?>? Their articles will remain.');">Delete</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         <?php endif; ?>
-    </div>
+    </section>
+</main>
 </body>
 </html>

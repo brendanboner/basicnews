@@ -1,6 +1,7 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/functions.php';
+require_once '../includes/ui.php';
 requireLogin();
 
 if (isAdmin()) {
@@ -183,93 +184,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['save_draft']) || iss
 
 $status = $meta['status'] ?? 'draft';
 $notes = $meta['editor_notes'] ?? '';
+$canSubmit = (!$isNew && ($meta['owner'] ?? $username) === $username && $status === 'draft');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $isNew ? 'New Article' : 'Edit Article'; ?> - <?php echo SITE_TITLE; ?></title>
+    <title><?php echo $isNew ? 'New article' : 'Edit article'; ?> - <?php echo bw_h(SITE_TITLE); ?></title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div class="nav">
-        <a href="index.php">My Articles</a>
-        <a href="edit.php">New Article</a>
-        <?php if (hasRole('subeditor')): ?><a href="review.php">Review Queue</a><?php endif; ?>
-        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a> <a href="archive.php">Archive</a><?php endif; ?>
-        <a href="password.php">Change Password</a>
-        <a href="logout.php">Logout</a>
-    </div>
+<body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
+<?php bw_user_nav($isNew ? 'new' : 'articles'); ?>
+<main class="bw-container">
+    <?php
+    $subtitle = $isNew ? 'Write in Markdown, save a draft, then submit it when you’re ready for review.' : 'Edit the story below. Your changes follow the review/publishing workflow for your role.';
+    bw_page_header($isNew ? 'New article' : 'Edit article', $subtitle, '<a href="index.php" class="btn">Back to my articles</a>');
+    ?>
 
-    <div style="max-width: 900px; margin: 0 auto;">
-        <h1 style="font-size: 18pt; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px;">
-            <?php echo $isNew ? 'New Article' : 'Edit Article'; ?>
-            <?php if (!$isNew): ?><span style="font-size:11pt;font-weight:normal;">(<?php echo htmlspecialchars($status); ?>)</span><?php endif; ?>
-        </h1>
+    <?php if (!$isNew): ?><p style="margin:-8px 0 14px;"><?php echo bw_status_badge($status); ?><?php if ($fullId): ?> <span class="bw-muted" style="font-size:12px;">ID: <?php echo bw_h($fullId); ?></span><?php endif; ?></p><?php endif; ?>
+    <?php if ($message): ?><div class="message success"><?php echo bw_h($message); ?></div><?php endif; ?>
+    <?php if ($uploadMessage): ?><div class="message success"><?php echo bw_h($uploadMessage); ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="message error"><?php echo bw_h($error); ?></div><?php endif; ?>
 
-        <?php if ($message): ?><div class="message success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
-        <?php if ($uploadMessage): ?><div class="message success"><?php echo htmlspecialchars($uploadMessage); ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-
+    <section class="bw-card">
         <form method="POST" id="article-form">
             <?php echo bw_csrf_field(); ?>
-            <input type="hidden" name="id" value="<?php echo htmlspecialchars($fullId); ?>">
+            <input type="hidden" name="id" value="<?php echo bw_h($fullId); ?>">
             <div class="form-group">
                 <label for="title">Title</label>
-                <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($title); ?>" required>
+                <input type="text" id="title" name="title" value="<?php echo bw_h($title); ?>" required>
             </div>
-
-            <?php if (!$isNew && $fullId): ?>
-                <div class="form-group">
-                    <label>Article ID</label>
-                    <input type="text" value="<?php echo htmlspecialchars($fullId); ?>" disabled style="background: #f0f0f0;">
-                </div>
-            <?php endif; ?>
 
             <?php if (hasRole('subeditor') && !$isNew): ?>
                 <div class="form-group">
-                    <label for="editor_notes">Editor Notes</label>
-                    <textarea id="editor_notes" name="editor_notes" style="min-height:80px;"><?php echo htmlspecialchars($notes); ?></textarea>
+                    <label for="editor_notes">Editor notes (visible to writers in the workflow)</label>
+                    <textarea id="editor_notes" name="editor_notes" style="min-height:80px;"><?php echo bw_h($notes); ?></textarea>
                 </div>
             <?php endif; ?>
 
             <div class="form-group">
-                <label for="content">Markdown Content</label>
-                <div id="image-drop-zone" class="image-drop-zone" data-fullid="<?php echo htmlspecialchars($fullId); ?>" data-upload="upload_image.php" data-csrf="<?php echo htmlspecialchars(bw_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
-                    <textarea id="content" name="content" class="markdown-editor" required><?php echo htmlspecialchars($content); ?></textarea>
-                    <p class="drop-hint"><?php if ($fullId): ?>Drag &amp; drop images here or paste an image (requires JavaScript). Without JavaScript, use the upload form below.<?php else: ?>Save the article first to enable drag-and-drop image uploads (requires JavaScript). You can still paste image URLs in Markdown, and the upload form appears after saving.<?php endif; ?></p>
+                <label for="content">Story (Markdown)</label>
+                <div id="image-drop-zone" class="image-drop-zone" data-fullid="<?php echo bw_h($fullId); ?>" data-upload="upload_image.php" data-csrf="<?php echo bw_h(bw_csrf_token()); ?>">
+                    <textarea id="content" name="content" class="markdown-editor" required><?php echo bw_h($content); ?></textarea>
+                    <p class="drop-hint"><?php if ($fullId): ?>Drag &amp; drop or paste images here (with JavaScript). Without JavaScript, use “Add image” below.<?php else: ?>Save the article first to enable drag-and-drop/paste uploads (with JavaScript). You can still use image URLs in Markdown now.<?php endif; ?></p>
                 </div>
-                <small style="display: block; margin-top: 5px; font-style: italic;">
-                    Supported: # ## ### **bold** *italic* [link](url) ![alt](image) | Tables | Images
-                </small>
+                <p class="bw-help">Formatting: <code>#</code> headings, <code>**bold**</code>, <code>*italic*</code>, <code>[link](url)</code>, <code>![image](url)</code>, tables, blockquotes.</p>
             </div>
 
-            <button type="submit" name="save_draft" class="btn">Save Draft</button>
-            <?php if (($meta['owner'] ?? $username) === $username && ($status === 'draft')): ?>
-                <button type="submit" name="submit_review" class="btn">Submit for Review</button>
+            <div class="bw-page-actions">
+                <button type="submit" name="save_draft" class="btn<?php echo $canSubmit ? '' : ' btn-primary'; ?>">Save draft</button>
+                <?php if ($canSubmit): ?>
+                    <button type="submit" name="submit_review" class="btn btn-primary">Submit for review</button>
+                <?php endif; ?>
+                <a href="index.php" class="btn">Cancel</a>
+            </div>
+            <?php if (!$isNew && ($status === 'published') && !hasRole('editor')): ?>
+                <p class="bw-help" style="margin-top:12px;"><strong>Note:</strong> if you save changes to a published story, it will be sent back for review and taken off the live site until an editor republishes it.</p>
             <?php endif; ?>
-            <a href="index.php" class="btn">Cancel</a>
         </form>
+    </section>
 
-        <?php if (!$isNew && $fullId): ?>
-        <div style="margin-top:24px; border:1px solid #000; padding:14px;">
-            <h2 style="font-size:13pt;margin-bottom:10px;">Add Image (works without JavaScript)</h2>
-            <form method="POST" enctype="multipart/form-data">
-                <?php echo bw_csrf_field(); ?>
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($fullId); ?>">
-                <input type="hidden" name="title" value="<?php echo htmlspecialchars($title); ?>">
-                <textarea name="content" style="display:none;"><?php echo htmlspecialchars($content); ?></textarea>
-                <div class="form-group">
-                    <label for="image_file">Upload image file</label>
-                    <input type="file" id="image_file" name="image_file" accept="image/*">
-                </div>
-                <button type="submit" name="upload_image" class="btn">Upload Image</button>
-            </form>
-            <p style="margin-top:10px;font-size:11pt;">You can also paste an image URL directly into Markdown: <code>![caption](https://example.com/image.jpg)</code></p>
-        </div>
-        <?php endif; ?>
-    </div>
-    <script src="../js/editor.js" defer></script>
+    <?php if (!$isNew && $fullId): ?>
+    <section class="bw-card">
+        <h2>Add image (works without JavaScript)</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <?php echo bw_csrf_field(); ?>
+            <input type="hidden" name="id" value="<?php echo bw_h($fullId); ?>">
+            <input type="hidden" name="title" value="<?php echo bw_h($title); ?>">
+            <textarea name="content" style="display:none;"><?php echo bw_h($content); ?></textarea>
+            <div class="form-group">
+                <label for="image_file">Upload image file</label>
+                <input type="file" id="image_file" name="image_file" accept="image/*">
+            </div>
+            <button type="submit" name="upload_image" class="btn">Upload image</button>
+        </form>
+        <p class="bw-help">Or paste an image URL directly into Markdown: <code>![caption](https://example.com/image.jpg)</code></p>
+    </section>
+    <?php endif; ?>
+</main>
+<script src="../js/editor.js" defer></script>
 </body>
 </html>

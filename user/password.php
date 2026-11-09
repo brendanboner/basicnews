@@ -1,5 +1,6 @@
 <?php
 require_once '../config/config.php';
+require_once '../includes/ui.php';
 if (!isLoggedIn() || isAdmin()) {
     header('Location: ../login.php');
     exit;
@@ -40,24 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Change Password - <?php echo SITE_TITLE; ?></title>
+    <title>Change password - <?php echo bw_h(SITE_TITLE); ?></title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div class="nav">
-        <a href="index.php">My Articles</a>
-        <a href="edit.php">New Article</a>
-        <?php if (hasRole('subeditor')): ?><a href="review.php">Review Queue</a><?php endif; ?>
-        <?php if (hasRole('editor')): ?><a href="editor.php">Editor Queue</a><?php endif; ?>
-        <a href="password.php">Change Password</a>
-        <a href="logout.php">Logout</a>
-    </div>
+<body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
+<?php bw_user_nav('password'); ?>
+<main class="bw-container-narrow">
+    <?php bw_page_header('Change password', 'Use at least 8 characters.'); ?>
+    <?php if ($message): ?><div class="message success"><?php echo bw_h($message); ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="message error"><?php echo bw_h($error); ?></div><?php endif; ?>
 
-    <div class="form-container">
-        <h1>Change Password</h1>
-        <?php if ($message): ?><div class="message success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-
+    <section class="bw-card">
         <form method="POST">
             <?php echo bw_csrf_field(); ?>
             <div class="form-group">
@@ -72,8 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="confirm_password">Confirm new password</label>
                 <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password">
             </div>
-            <button type="submit" class="btn">Change Password</button>
+            <button type="submit" class="btn btn-primary">Change password</button>
         </form>
-    </div>
+    </section>
+</main>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <?php
 require_once '../config/config.php';
+require_once '../includes/ui.php';
 requireAdmin();
 
 $message = '';
@@ -55,23 +56,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Settings - <?php echo SITE_TITLE; ?></title>
+    <title>Site settings - <?php echo bw_h(SITE_TITLE); ?></title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-    <div class="nav">
-        <a href="index.php">Admin Panel</a>
-        <a href="users.php">Manage Users</a>
-        <a href="settings.php">Site Settings</a>
-        <a href="password.php">Change Password</a>
-        <a href="logout.php">Logout</a>
-    </div>
+<body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
+<?php bw_admin_nav('settings'); ?>
+<main class="bw-container">
+    <?php bw_page_header('Site settings', 'Control the masthead and choose built-in reading styles. Changes apply to the public homepage and article pages.'); ?>
+    <?php if ($message): ?><div class="message success"><?php echo bw_h($message); ?></div><?php endif; ?>
+    <?php if ($error): ?><div class="message error"><?php echo bw_h($error); ?></div><?php endif; ?>
 
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="font-size: 18pt; margin-bottom: 20px; text-align: center; border-bottom: 1px solid #000; padding-bottom: 10px;">Site Settings</h1>
-        <?php if ($message): ?><div class="message success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
-        <?php if ($error): ?><div class="message error"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-
+    <section class="bw-card">
         <form method="POST">
             <?php echo bw_csrf_field(); ?>
             <div class="form-group">
@@ -125,8 +120,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea id="custom_css" name="custom_css" class="markdown-editor" style="min-height:220px;font-family:'Courier New',monospace;font-size:12px;"><?php echo htmlspecialchars($customCss, ENT_QUOTES, 'UTF-8'); ?></textarea>
                 <small style="display:block;margin-top:5px;font-style:italic;">Use simple overrides (colors, fonts, spacing). Avoid external @import/dependencies to keep it fast.</small>
             </div>
-            <button type="submit" class="btn">Save Settings</button>
+            <button type="submit" class="btn btn-primary">Save settings</button>
         </form>
-    </div>
+    </section>
+</main>
 </body>
 </html>
