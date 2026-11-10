@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Beverly Times</title>
+<meta name="description" content="The Beverly Times — the newsroom is one click away.">
+<style>
+@font-face {
+  font-family: 'Noticia Text';
+  font-style: normal;
+  font-weight: 400;
+  src: url('news/fonts/noticia-text-400-normal-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noticia Text';
+  font-style: normal;
+  font-weight: 700;
+  src: url('news/fonts/noticia-text-700-normal-latin.woff2') format('woff2');
+}
+html, body {
+  margin: 0; height: 100%;
+  background: #08090f; color: #e8e4d8; overflow: hidden;
+  font-family: 'Noticia Text', Georgia, 'Times New Roman', serif;
+}
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; }
+/* Cinematic vignette over the canvas */
+#stage::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(8,9,15,0) 52%, rgba(8,9,15,0.85) 100%);
+}
+.masthead {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 2; text-align: center;
+  padding: 26px 18px 34px; pointer-events: none;
+  background: linear-gradient(rgba(8,9,15,0.88), rgba(8,9,15,0));
+}
+.rule { border-top: 1px solid #e8e4d8; }
+.rule-thin { border-top: 1px solid rgba(232,228,216,0.55); margin: 6px 0; }
+.rule-thick { border-top: 3px double #e8e4d8; }
+.masthead h1 {
+  margin: 12px 0 10px; font-weight: 700; line-height: 1;
+  font-size: clamp(36px, 6.4vw, 78px); text-transform: uppercase; letter-spacing: 0.05em;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.75);
+}
+.masthead .sub {
+  display: flex; justify-content: space-between; max-width: 860px; margin: 6px auto 0;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; opacity: 0.8;
+}
+.enter { position: fixed; left: 0; right: 0; bottom: 38px; z-index: 2; text-align: center; }
+.enter a {
+  display: inline-block; color: #e8e4d8; text-decoration: none; text-transform: uppercase;
+  letter-spacing: 0.22em; font-size: 12px; padding: 12px 28px;
+  border: 1px solid rgba(232,228,216,0.65); background: rgba(8,9,15,0.7);
+  transition: background 0.25s, color 0.25s;
+}
+.enter a:hover, .enter a:focus { background: #e8e4d8; color: #08090f; outline: none; }
+.enter .hint { display: block; margin-top: 12px; font-size: 11.5px; font-style: italic; opacity: 0.6; }
+noscript div {
+  position: fixed; inset: 0; display: grid; place-items: center; background: #08090f;
+}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<header class="masthead">
+  <div class="rule"></div>
+  <h1>The Beverly Times</h1>
+  <div class="rule-thin"></div>
+  <div class="sub"><span id="mast-date"></span><span>Late Edition</span></div>
+  <div class="rule-thick"></div>
+</header>
+<div class="enter">
+  <a href="news/">Enter the newsroom</a>
+  <span class="hint">Behind this page, a four-dimensional object is turning itself inside out.</span>
+</div>
+<noscript><div>JavaScript is off, so the illusion cannot run &mdash; <a href="news/">enter the newsroom</a>.</div></noscript>
+<script src="vendor/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var dateEl = document.getElementById('mast-date');
+  if (dateEl) {
+    try {
+      dateEl.textContent = new Date().toLocaleDateString('en-IE',
+        { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) { dateEl.textContent = ''; }
+  }
+  if (!window.THREE) return;
+
+  var stage = document.getElementById('stage');
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+  catch (e) { return; } /* no WebGL: the masthead alone remains */
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x08090f, 1);
+  stage.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x08090f, 0.05);
+  var camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 140);
+  camera.position.set(0, 0, 6.6);
+
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  var SPEED = reduce ? 0.2 : 1;
+
+  /* ---- The illusion, part 1: a tesseract (4D hypercube).
+     It rotates through planes that do not exist in our space, so the
+     "inner" cube and "outer" cube continuously swap places. Vertex color
+     encodes the hidden 4th coordinate: cyan -> amber. ---- */
+  var V = [];
+  for (var i = 0; i < 16; i++) {
+    V.push([(i & 1) ? 1 : -1, (i & 2) ? 1 : -1, (i & 4) ? 1 : -1, (i & 8) ? 1 : -1]);
+  }
+  var E = [];
+  for (var a = 0; a < 16; a++) {
+    for (var b = a + 1; b < 16; b++) {
+      var d = a ^ b;
+      if (d && !(d & (d - 1))) E.push([a, b]); /* differ in exactly one coordinate */
+    }
+  }
+
+  var SCALE = 1.15, PROJ = 3.6;
+  var vPos = new Float32Array(16 * 3);
+  var vCol = new Float32Array(16 * 3);
+  var ePos = new Float32Array(E.length * 6);
+  var eCol = new Float32Array(E.length * 6);
+
+  var lineGeo = new THREE.BufferGeometry();
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(ePos, 3));
+  lineGeo.setAttribute('color', new THREE.BufferAttribute(eCol, 3));
+  var lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
+    vertexColors: true, transparent: true, opacity: 0.9,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(lines);
+
+  function glowTexture() {
+    var c = document.createElement('canvas');
+    c.width = c.height = 64;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,246,220,1)');
+    grad.addColorStop(0.35, 'rgba(255,240,200,0.55)');
+    grad.addColorStop(1, 'rgba(255,240,200,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  }
+  var ptGeo = new THREE.BufferGeometry();
+  ptGeo.setAttribute('position', new THREE.BufferAttribute(vPos, 3));
+  var points = new THREE.Points(ptGeo, new THREE.PointsMaterial({
+    size: 0.17, map: glowTexture(), transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(points);
+
+  var CYAN = [0.36, 0.78, 0.92], AMBER = [0.99, 0.79, 0.38];
+
+  function rot4(v, i, j, t) {
+    var c = Math.cos(t), s = Math.sin(t), x = v[i], y = v[j];
+    v[i] = x * c - y * s;
+    v[j] = x * s + y * c;
+  }
+
+  var P = [0, 0, 0, 0];
+  function updateHypercube(t) {
+    for (var i = 0; i < 16; i++) {
+      P[0] = V[i][0]; P[1] = V[i][1]; P[2] = V[i][2]; P[3] = V[i][3];
+      rot4(P, 0, 3, t * 0.31 * SPEED);                                  /* XW */
+      rot4(P, 1, 3, t * 0.23 * SPEED);                                  /* YW */
+      rot4(P, 2, 3, t * 0.17 * SPEED + Math.sin(t * 0.11 * SPEED) * 0.7); /* ZW */
+      rot4(P, 0, 1, t * 0.06 * SPEED);                                  /* gentle 3D spin */
+      var k = PROJ / (PROJ - P[3]);
+      vPos[i * 3]     = P[0] * k * SCALE;
+      vPos[i * 3 + 1] = P[1] * k * SCALE;
+      vPos[i * 3 + 2] = P[2] * k * SCALE;
+      /* color by 4th coordinate: cyan (w<0) -> amber (w>0) */
+      var w = Math.max(-1, Math.min(1, P[3] / 1.35));
+      var mix = (w + 1) / 2;
+      vCol[i * 3]     = CYAN[0] + (AMBER[0] - CYAN[0]) * mix;
+      vCol[i * 3 + 1] = CYAN[1] + (AMBER[1] - CYAN[1]) * mix;
+      vCol[i * 3 + 2] = CYAN[2] + (AMBER[2] - CYAN[2]) * mix;
+    }
+    for (var e = 0; e < E.length; e++) {
+      var a3 = E[e][0] * 3, b3 = E[e][1] * 3;
+      ePos[e * 6]     = vPos[a3];     ePos[e * 6 + 1] = vPos[a3 + 1]; ePos[e * 6 + 2] = vPos[a3 + 2];
+      ePos[e * 6 + 3] = vPos[b3];     ePos[e * 6 + 4] = vPos[b3 + 1]; ePos[e * 6 + 5] = vPos[b3 + 2];
+      eCol[e * 6]     = vCol[a3];     eCol[e * 6 + 1] = vCol[a3 + 1]; eCol[e * 6 + 2] = vCol[a3 + 2];
+      eCol[e * 6 + 3] = vCol[b3];     eCol[e * 6 + 4] = vCol[b3 + 1]; eCol[e * 6 + 5] = vCol[b3 + 2];
+    }
+    ptGeo.attributes.position.needsUpdate = true;
+    lineGeo.attributes.position.needsUpdate = true;
+    lineGeo.attributes.color.needsUpdate = true;
+  }
+
+  /* ---- The illusion, part 2: an endless corridor of counter-rotating
+     heptagon/nonagon rings that drifts past forever. ---- */
+  var rings = [];
+  var RING_N = 26, STEP = 2.25, SPAN = RING_N * STEP;
+  function makeRing(radius, sides, color, opacity) {
+    var pts = [];
+    for (var k = 0; k < sides; k++) {
+      var ang = (k / sides) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(ang) * radius, Math.sin(ang) * radius, 0));
+    }
+    var geo = new THREE.BufferGeometry().setFromPoints(pts);
+    return new THREE.LineLoop(geo, new THREE.LineBasicMaterial({
+      color: color, transparent: true, opacity: opacity,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+  }
+  for (var r = 0; r < RING_N; r++) {
+    var rad = 2.7 + Math.sin(r * 0.87) * 0.5;
+    var ring = makeRing(rad, (r % 2 === 0) ? 7 : 9, (r % 2 === 0) ? 0x51cfdd : 0xd8a24a, 0.33);
+    ring.position.z = -r * STEP;
+    ring.userData.spin = (r % 2 === 0 ? 1 : -1) * (0.08 + 0.03 * (r % 4));
+    rings.push(ring);
+    scene.add(ring);
+  }
+
+  /* ---- Mouse parallax: the camera leans with the pointer. ---- */
+  var tx = 0, ty = 0, mx = 0, my = 0;
+  window.addEventListener('pointermove', function (e) {
+    tx = (e.clientX / window.innerWidth - 0.5) * 2;
+    ty = -(e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  window.addEventListener('resize', function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  var clock = new THREE.Clock();
+  (function tick() {
+    var dt = Math.min(clock.getDelta(), 0.1);
+    var t = clock.elapsedTime;
+    updateHypercube(t);
+
+    for (var r = 0; r < rings.length; r++) {
+      var ring = rings[r];
+      ring.position.z += dt * 2.4 * SPEED;
+      if (ring.position.z > camera.position.z + 1.2) ring.position.z -= SPAN;
+      ring.rotation.z += dt * ring.userData.spin * SPEED;
+    }
+
+    mx += (tx - mx) * 0.05;
+    my += (ty - my) * 0.05;
+    camera.position.x = mx * 1.1 + Math.sin(t * 0.13 * SPEED) * 0.28;
+    camera.position.y = my * 0.7 + Math.cos(t * 0.17 * SPEED) * 0.22;
+    camera.lookAt(0, 0, -8);
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
+</body>
+</html>
