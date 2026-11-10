@@ -7,26 +7,35 @@ A simple, elegant markdown-to-HTML publishing system designed for Synology NAS B
 - **Newspaper-style design**: Times-like serif fonts, clean and elegant
 - **Markdown support**: Headers, bold, italics, links (bold, uncolored), images
 - **User management**: Admin creates users/passwords
+- **Author profiles**: Each user can set a full name, title, and short biography for public bylines
 - **Per-user workflow**: Each user can create/edit markdown and publish to HTML
 - **Chronological front page**: Lists all published articles by date
-- **Clean article view**: Hidden back button that appears on hover
+- **Clean article view**: Compact masthead and print-style previous/next links
+- **Print-friendly**: Dedicated print styles for a broadsheet-like page
+- **Page-turn between stories**: Article pages turn like paper — the Previous/Next story links curl the page over its spine in 3D and the next story settles into place (arrow keys work too). Tune perspective/speed or turn it off in **Admin → Site settings**
+- **Promotable lead story**: Editors promote a published story to the top of the front page (one lead at a time) from the dashboard or their article list; the lead runs with an extended, multi-paragraph newspaper excerpt
 - **File-based**: No database required, just copy to web directory
 - **No AI dependencies**
 
 ## Deployment to Synology
 
-1. Copy/clone this directory to your Synology web server home directory (usually `/volume1/web/` or similar) and enable PHP (Web Station).
-2. Set permissions: PHP/web server needs write access to `content/`, `content/_trash/`, `cache/`, and `media/` (avoid `777`).
-3. Initialize and test (CLI): `bin/basicweb rebuild --all && bin/basicweb test`.
-4. **Security**: change the default admin password (log in at `/login.php` with `admin`/`admin`, then you’ll be asked to set a new password) immediately and use HTTPS. Block sensitive paths (`/.git`, `/bin`, `/config`, `/includes`, `/users`, `/content/_*`) in your web server config.
-   - Nginx: see `deploy/nginx-basicweb.conf`. **Nginx will not pick this up automatically** just because it’s in `/volume1/web` (the document root). You must include/paste it into the site’s `server {}` config (Synology Web Station/Portal/reverse proxy/nginx config) and reload nginx (`nginx -t` then reload). Rules apply to the site’s URI paths; they work for root or subpath installs when placed in the correct server block.
+1. Copy/clone this directory into a **subdirectory of your web root** — e.g. `/volume1/web/news/` — and enable PHP (Web Station). The app works at the site root or in any subdirectory; login redirects adjust automatically.
+2. Optionally copy the contents of `homepage/` (a static `index.html` plus a self-hosted `vendor/three.min.js`) to the **web root** for a visual-illusion landing page that links into the newsroom at `news/`.
+3. Set permissions: PHP/web server needs write access to `content/`, `content/_trash/`, `cache/`, and `media/` (avoid `777`).
+4. Initialize and test (CLI): `bin/basicweb rebuild --all && bin/basicweb test`.
+5. **Security**: change the default admin password (log in at `/news/login.php` with `admin`/`admin`, then you’ll be asked to set a new password) immediately and use HTTPS. Block sensitive paths (`/news/.git`, `/news/bin`, `/news/config`, `/news/includes`, `/news/users`, `/news/content/_*`) in your web server config.
+   - Nginx: see `deploy/nginx-basicweb.conf`. **Nginx will not pick this up automatically** just because it’s in your web root. You must include/paste it into the site’s `server {}` config (Synology Web Station/Portal/reverse proxy/nginx config) and reload nginx (`nginx -t` then reload). The rules are written for a `/news/` subpath install; adjust prefixes if you serve the app elsewhere.
 
 ## Initial Setup
 
-1. Go to `/login.php` and sign in with the default admin account: username `admin`, password `admin`.
+1. Go to `/news/login.php` and sign in with the default admin account: username `admin`, password `admin`.
 2. **Change the admin password immediately** when prompted.
-3. Create user accounts from the admin area (`/admin/`).
-4. Writers, subeditors, and editors all sign in at the same `/login.php` page and are taken to the right area for their role.
+3. Create user accounts from the admin area (`/news/admin/`).
+4. Writers, subeditors, and editors all sign in at the same `/news/login.php` page and are taken to the right area for their role.
+
+## Author profiles
+
+Users can open **Profile** in their workspace to set the full name, title, and short biography that appear with their published stories. Admins can edit any user's profile from **Admin → Users → Edit profile**. If a full name is not set, the site falls back to the username.
 
 ## File Structure
 
@@ -38,7 +47,9 @@ A simple, elegant markdown-to-HTML publishing system designed for Synology NAS B
 - `users/` - User authentication data
 - `config/` - Configuration files
 - `css/` - Stylesheets
+- `fonts/` - Self-hosted Noticia Text webfonts (no external font requests)
 - `includes/` - Shared PHP functions
+- `homepage/` - Optional static landing page for the web root (three.js illusion), copy its contents next to the app folder
 
 ## How a story gets published
 

@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - <?php echo htmlspecialchars(SITE_TITLE, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="css/style.css">
-    <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="css/custom.css"><?php endif; ?>
+    <link rel="stylesheet" href="<?php echo bw_asset('css/style.css'); ?>">
+    <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="<?php echo bw_asset('css/custom.css'); ?>"><?php endif; ?>
 </head>
 <body class="<?php echo htmlspecialchars(bw_style_body_classes(''), ENT_QUOTES, 'UTF-8'); ?>">
     <div class="form-container">

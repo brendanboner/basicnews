@@ -16,6 +16,54 @@ function articleSlugId($fullId) {
     return isset($parts[1]) ? $parts[1] : $fullId;
 }
 
+/* User profiles (stored alongside credentials in users/*.json) */
+function bw_user_file_path($username) {
+    $username = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$username);
+    if ($username === '') return '';
+    return USERS_DIR . $username . '.json';
+}
+
+function bw_read_user($username, $reload = false) {
+    static $cache = array();
+    $username = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$username);
+    if ($username === '') return null;
+    if (!$reload && array_key_exists($username, $cache)) return $cache[$username];
+    $file = bw_user_file_path($username);
+    $user = ($file !== '' && is_file($file)) ? json_decode(@file_get_contents($file), true) : null;
+    if (!is_array($user)) $user = null;
+    $cache[$username] = $user;
+    return $user;
+}
+
+function bw_user_profile($username, $reload = false) {
+    $user = bw_read_user($username, $reload);
+    $fullName = trim((string)($user['full_name'] ?? $user['display_name'] ?? ''));
+    $title = trim((string)($user['title'] ?? ''));
+    $bio = trim((string)($user['bio'] ?? ''));
+    return array(
+        'username' => (string)$username,
+        'full_name' => $fullName,
+        'display_name' => $fullName !== '' ? $fullName : (string)$username,
+        'title' => $title,
+        'bio' => $bio,
+    );
+}
+
+function bw_user_display_name($username) {
+    $profile = bw_user_profile($username);
+    return $profile['display_name'];
+}
+
+function bw_user_title($username) {
+    $profile = bw_user_profile($username);
+    return $profile['title'];
+}
+
+function bw_user_bio($username) {
+    $profile = bw_user_profile($username);
+    return $profile['bio'];
+}
+
 /* Bundle layout (dir-per-article) */
 function articleDir($fullId) {
     $fullId = safeArticleId($fullId);
@@ -113,6 +161,7 @@ function manifestEntryFromMeta($meta) {
         'date' => isset($meta['date']) ? (int)$meta['date'] : 0,
         'updated' => isset($meta['updated']) ? (int)$meta['updated'] : (isset($meta['date']) ? (int)$meta['date'] : 0),
         'editor_notes' => $meta['editor_notes'] ?? '',
+        'promoted' => !empty($meta['promoted']),
     );
 }
 
@@ -272,6 +321,23 @@ function normalizeMediaPaths($html) {
     return $html;
 }
 
+/* Pull a leading image out of its paragraph and into a newspaper figure so
+   article pages get the same halftone treatment as the front page. */
+function bw_style_content_images($html) {
+    $html = (string)$html;
+    $html = preg_replace_callback(
+        '#<p>\s*(<img\b[^>]*>)(.*?)</p>#is',
+        function ($m) {
+            $rest = trim($m[2]);
+            $out = '<figure class="nyt-figure">' . $m[1] . '</figure>';
+            if ($rest !== '') $out .= '<p>' . $rest . '</p>';
+            return $out;
+        },
+        $html
+    );
+    return $html;
+}
+
 function bw_build_public_article_entry($entry, $htmlContent = null) {
     $fullId = $entry['fullId'] ?? '';
     if ($fullId === '') return null;
@@ -290,16 +356,47 @@ function bw_build_public_article_entry($entry, $htmlContent = null) {
     $textContent = trim($textContent);
     $excerptShort = (mb_strlen($textContent, 'UTF-8') > 200) ? mb_substr($textContent, 0, 197, 'UTF-8') . '...' : $textContent;
     $excerptLong = (mb_strlen($textContent, 'UTF-8') > 900) ? mb_substr($textContent, 0, 897, 'UTF-8') . '...' : $textContent;
+    $author = $entry['author'] ?? $entry['owner'] ?? '';
     return array(
         'id' => $fullId,
         'title' => $entry['title'] ?? $fullId,
-        'author' => $entry['author'] ?? $entry['owner'] ?? '',
+        'author' => $author,
+        'author_name' => bw_user_display_name($author),
+        'author_title' => bw_user_title($author),
         'date' => isset($entry['date']) ? (int)$entry['date'] : 0,
         'excerpt' => $excerptShort,
         'excerptLong' => $excerptLong,
         'excerptFull' => $textContent,
         'image' => $firstImage,
+        'promoted' => !empty($entry['promoted']),
     );
+}
+
+/* Split an article's full text into newspaper-style paragraphs for the
+   front-page lead, stopping near $maxChars at a sentence boundary.
+   Returns an array of paragraph strings (never cuts mid-sentence). */
+function bw_lead_paragraphs($entry, $maxChars = 1000) {
+    $text = trim((string)($entry['excerptFull'] ?? ''));
+    if ($text === '') return array();
+    $sentences = preg_split('/(?<=[.!?])\s+/u', $text);
+    if (!is_array($sentences)) $sentences = array($text);
+    $paras = array();
+    $cur = '';
+    $used = 0;
+    foreach ($sentences as $s) {
+        $s = trim($s);
+        if ($s === '') continue;
+        $cur = ($cur === '') ? $s : $cur . ' ' . $s;
+        $used += mb_strlen($s, 'UTF-8') + 1;
+        $curLen = mb_strlen($cur, 'UTF-8');
+        if ($curLen >= 220 || ($used >= $maxChars && $curLen >= 80)) {
+            $paras[] = $cur;
+            $cur = '';
+        }
+        if ($used >= $maxChars) break;
+    }
+    if ($cur !== '') $paras[] = $cur;
+    return $paras;
 }
 
 function getAllPublishedArticles() {
@@ -310,7 +407,7 @@ function getAllPublishedArticles() {
         if (is_array($cache) && isset($cache['articles']) && is_array($cache['articles'])) {
             $cached = $cache['articles'];
             $ok = true;
-            foreach ($cached as $c) { if (!is_array($c) || !array_key_exists('excerpt', $c)) { $ok = false; break; } }
+            foreach ($cached as $c) { if (!is_array($c) || !array_key_exists('excerpt', $c) || !array_key_exists('author_name', $c) || !array_key_exists('promoted', $c)) { $ok = false; break; } }
             if ($ok) return $cached;
         }
     }
@@ -334,7 +431,7 @@ function getArticle($id) {
     if ($meta && file_exists($htmlFile)) {
         $status = $meta['status'] ?? (!empty($meta['published']) ? 'published' : 'draft');
         if ($status === 'published' || !empty($meta['published'])) {
-            $html = normalizeMediaPaths(@file_get_contents($htmlFile));
+            $html = bw_style_content_images(normalizeMediaPaths(@file_get_contents($htmlFile)));
             return array('html' => $html, 'meta' => $meta);
         }
     }
@@ -344,7 +441,7 @@ function getArticle($id) {
     if (file_exists($legacyHtml) && file_exists($legacyMeta)) {
         $meta = json_decode(@file_get_contents($legacyMeta), true);
         if (is_array($meta) && (!empty($meta['published']) || ($meta['status'] ?? '') === 'published')) {
-            $html = normalizeMediaPaths(@file_get_contents($legacyHtml));
+            $html = bw_style_content_images(normalizeMediaPaths(@file_get_contents($legacyHtml)));
             return array('html' => $html, 'meta' => $meta);
         }
     }
@@ -358,7 +455,7 @@ function bw_sanitize_markdown_url($url) {
     if ($u === '') return '#';
     if (preg_match('/[\x00-\x1f\x7f]/', $u)) return '#';
     if (preg_match('#^(https?:|mailto:)#i', $u)) return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-    if (preg_match('#^(/|\.{1,2}/|\?|#|media/|../media/)#', $u)) return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    if (preg_match('~^(/|\.{1,2}/|\?|\#|media/|\.\./media/)~', $u)) return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     // Block javascript:, data:, vbscript:, and other schemes.
     if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $u)) return '#';
     return htmlspecialchars($u, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

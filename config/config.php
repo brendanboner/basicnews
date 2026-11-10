@@ -58,6 +58,10 @@ function bw_site_settings($reload = false) {
         'font_scale' => 'normal',
         'home_density' => 'full',
         'spacing' => 'normal',
+        'page_turn' => 'on',
+        'page_turn_perspective' => 'normal',
+        'page_turn_speed' => 'normal',
+        'lead_detail' => 'extended',
     );
     $s = $defaults;
     $f = SITE_SETTINGS_FILE;
@@ -71,6 +75,10 @@ function bw_site_settings($reload = false) {
     $s['font_scale'] = in_array($s['font_scale'] ?? '', array('small', 'normal', 'large', 'xlarge'), true) ? $s['font_scale'] : $defaults['font_scale'];
     $s['home_density'] = in_array($s['home_density'] ?? '', array('full', 'compact', 'headlines'), true) ? $s['home_density'] : $defaults['home_density'];
     $s['spacing'] = in_array($s['spacing'] ?? '', array('tight', 'normal', 'relaxed'), true) ? $s['spacing'] : $defaults['spacing'];
+    $s['page_turn'] = in_array($s['page_turn'] ?? '', array('on', 'off'), true) ? $s['page_turn'] : $defaults['page_turn'];
+    $s['page_turn_perspective'] = in_array($s['page_turn_perspective'] ?? '', array('subtle', 'normal', 'dramatic'), true) ? $s['page_turn_perspective'] : $defaults['page_turn_perspective'];
+    $s['page_turn_speed'] = in_array($s['page_turn_speed'] ?? '', array('fast', 'normal', 'slow'), true) ? $s['page_turn_speed'] : $defaults['page_turn_speed'];
+    $s['lead_detail'] = in_array($s['lead_detail'] ?? '', array('standard', 'extended'), true) ? $s['lead_detail'] : $defaults['lead_detail'];
     return $s;
 }
 function bw_style_body_classes($base = '') {
@@ -127,27 +135,45 @@ function bw_password_file_for_session() {
     if (isAdmin() || $name === 'admin') return USERS_DIR . 'admin.json';
     return USERS_DIR . $name . '.json';
 }
+/* Base URI of the app ('/' at the web root, '/news/' when installed in a
+   subdirectory). Derived from the current script path so redirects keep
+   working no matter where the app is deployed. */
+function bw_app_base_uri() {
+    $script = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $parts = explode('/', trim($script, '/'));
+    array_pop($parts); // script filename
+    $last = count($parts) ? $parts[count($parts) - 1] : '';
+    if ($last === 'admin' || $last === 'user' || $last === 'bin') array_pop($parts);
+    $base = '/' . implode('/', $parts);
+    if (substr($base, -1) !== '/') $base .= '/';
+    return $base;
+}
 function requirePasswordChanged() {
     if (!isLoggedIn()) return;
     if (empty($_SESSION['force_password_change'])) return;
     $script = basename($_SERVER['SCRIPT_NAME'] ?? '');
     if (in_array($script, array('password.php', 'logout.php', 'login.php'), true)) return;
-    $base = isAdmin() ? '/admin/' : '/user/';
-    if (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/admin/') !== false) $base = '';
-    elseif (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/user/') !== false) $base = '';
-    header('Location: ' . $base . 'password.php?forced=1');
+    header('Location: ' . bw_app_base_uri() . (isAdmin() ? 'admin/' : 'user/') . 'password.php?forced=1');
     exit;
 }
-function requireLogin() { if (!isLoggedIn()) { header('Location: /login.php'); exit; } requirePasswordChanged(); }
+function requireLogin() { if (!isLoggedIn()) { header('Location: ' . bw_app_base_uri() . 'login.php'); exit; } requirePasswordChanged(); }
 function requireAdmin() {
-    if (!isLoggedIn()) { header('Location: /login.php'); exit; }
-    if (!isAdmin()) { header('Location: /user/index.php'); exit; }
+    if (!isLoggedIn()) { header('Location: ' . bw_app_base_uri() . 'login.php'); exit; }
+    if (!isAdmin()) { header('Location: ' . bw_app_base_uri() . 'user/index.php'); exit; }
     requirePasswordChanged();
 }
-function requireRole($role) { if (!hasRole($role)) { header('Location: /user/index.php'); exit; } requirePasswordChanged(); }
+function requireRole($role) { if (!hasRole($role)) { header('Location: ' . bw_app_base_uri() . 'user/index.php'); exit; } requirePasswordChanged(); }
 function userBasePath() {
     $script = $_SERVER['SCRIPT_NAME'] ?? '';
     if (strpos($script, '/user/') !== false) return '';
     if (strpos($script, '/admin/') !== false) return '../user/';
     return 'user/';
+}
+
+/* Append the file mtime so browsers/proxies fetch fresh CSS after a deploy. */
+function bw_asset($href) {
+    $clean = preg_replace('#^(\.\./)+#', '', (string)$href);
+    $file = __DIR__ . '/../' . $clean;
+    $v = is_file($file) ? filemtime($file) : 0;
+    return $href . ($v ? '?v=' . $v : '');
 }

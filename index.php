@@ -1,12 +1,24 @@
 <?php
 require_once 'includes/functions.php';
+require_once 'includes/ui.php';
+
 $articles = getAllPublishedArticles();
+
+/* The promoted story leads the paper; everything else follows by date. */
+usort($articles, function ($a, $b) {
+    $pa = !empty($a['promoted']) ? 1 : 0;
+    $pb = !empty($b['promoted']) ? 1 : 0;
+    if ($pa !== $pb) return $pb - $pa;
+    return ($b['date'] ?? 0) - ($a['date'] ?? 0);
+});
+
 $_bw = bw_site_settings();
 $_home = $_bw['home_density'] ?? 'full';
 $_railMax = ($_home === 'full') ? 10 : (($_home === 'compact') ? 7 : 8);
 $_bottom = ($_home === 'full');
 $_showMidExcerpts = ($_home !== 'headlines');
 $_showRailExcerpts = ($_home === 'full');
+$_leadExtended = ($_bw['lead_detail'] ?? 'extended') === 'extended';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,27 +26,18 @@ $_showRailExcerpts = ($_home === 'full');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars(SITE_TITLE, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="css/style.css">
-    <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="css/custom.css"><?php endif; ?>
+    <link rel="stylesheet" href="<?php echo bw_asset('css/style.css'); ?>">
+    <?php if (is_file(__DIR__ . '/css/custom.css')): ?><link rel="stylesheet" href="<?php echo bw_asset('css/custom.css'); ?>"><?php endif; ?>
 </head>
 <body class="<?php echo htmlspecialchars(bw_style_body_classes('nyt'), ENT_QUOTES, 'UTF-8'); ?>">
-    <header class="nyt-masthead">
-        <div class="nyt-rule-top"></div>
-        <h1 class="nyt-title"><?php echo SITE_TITLE; ?></h1>
-        <div class="nyt-rule-thin"></div>
-        <div class="nyt-subhead">
-            <span class="nyt-date"><?php echo date('l, F j, Y'); ?></span>
-            <span class="nyt-edition"><?php echo htmlspecialchars(bw_site_settings()['edition'] ?? 'Late Edition', ENT_QUOTES, 'UTF-8'); ?></span>
-        </div>
-        <div class="nyt-rule-thick"></div>
-    </header>
+    <?php bw_site_masthead('home'); ?>
 
     <?php if (empty($articles)): ?>
         <p class="nyt-empty">No articles published yet.</p>
     <?php else: ?>
         <main class="nyt-grid">
             <?php $count = count($articles); ?>
-            
+
             <?php if ($count >= 1): $article = $articles[0]; ?>
             <section class="nyt-col nyt-col-lead">
                 <article class="nyt-story nyt-story-lead">
@@ -45,14 +48,24 @@ $_showRailExcerpts = ($_home === 'full');
                         </figure>
                         <?php endif; ?>
                         <h2 class="nyt-headline nyt-headline-xl"><?php echo htmlspecialchars($article['title']); ?></h2>
-                        <?php if (isset($article['excerpt']) && $article['excerpt']): ?>
-                        <p class="nyt-summary"><?php echo htmlspecialchars($article['excerpt']); ?></p>
-                        <?php endif; ?>
                         <div class="nyt-byline">
-                            <?php if (isset($article['author']) && $article['author']): ?>
+                            <?php if (isset($article['author_name']) && $article['author_name']): ?>
+                                <span class="nyt-by">By <?php echo htmlspecialchars($article['author_name']); ?></span>
+                            <?php elseif (isset($article['author']) && $article['author']): ?>
                                 <span class="nyt-by">By <?php echo htmlspecialchars($article['author']); ?></span>
                             <?php endif; ?>
+                            <?php if (!empty($article['date'])): ?>
+                                <span class="nyt-dateline"><?php echo htmlspecialchars(date('l, F j, Y', (int)$article['date'])); ?></span>
+                            <?php endif; ?>
                         </div>
+                        <?php if ($_leadExtended && bw_lead_paragraphs($article, 1000)): ?>
+                            <?php foreach (bw_lead_paragraphs($article, 1000) as $leadPara): ?>
+                        <p class="nyt-summary"><?php echo htmlspecialchars($leadPara); ?></p>
+                            <?php endforeach; ?>
+                        <span class="nyt-continued">Continued &mdash; read the full story</span>
+                        <?php elseif (isset($article['excerpt']) && $article['excerpt']): ?>
+                        <p class="nyt-summary"><?php echo htmlspecialchars($article['excerpt']); ?></p>
+                        <?php endif; ?>
                     </a>
                 </article>
             </section>

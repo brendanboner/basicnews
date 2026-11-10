@@ -21,6 +21,21 @@ function bw_status_badge($status) {
     return '<span class="bw-badge bw-badge-' . $s . '">' . $label . '</span>';
 }
 
+function bw_site_masthead($context = 'home') {
+    $settings = bw_site_settings();
+    $isArticle = ($context === 'article');
+    $tag = $isArticle ? 'div' : 'h1';
+    $title = bw_h(SITE_TITLE);
+    if ($isArticle) $title = '<a href="index.php">' . $title . '</a>';
+    echo '<header class="nyt-masthead' . ($isArticle ? ' nyt-masthead-article' : '') . '">';
+    echo '<div class="nyt-rule-top"></div>';
+    echo '<' . $tag . ' class="nyt-title' . ($isArticle ? ' nyt-title-sm' : '') . '">' . $title . '</' . $tag . '>';
+    echo '<div class="nyt-rule-thin"></div>';
+    echo '<div class="nyt-subhead"><span class="nyt-date">' . bw_h(date('l, F j, Y')) . '</span><span class="nyt-edition">' . bw_h($settings['edition'] ?? 'Late Edition') . '</span></div>';
+    echo '<div class="nyt-rule-thick"></div>';
+    echo '</header>';
+}
+
 function bw_admin_nav($active = '') {
     $items = array(
         'dashboard' => array('label' => 'Dashboard', 'href' => 'index.php'),
@@ -29,6 +44,7 @@ function bw_admin_nav($active = '') {
         'password' => array('label' => 'Password', 'href' => 'password.php'),
     );
     $user = $_SESSION['user']['username'] ?? 'admin';
+    $display = function_exists('bw_user_display_name') ? bw_user_display_name($user) : $user;
     echo '<header class="bw-topbar"><div class="bw-topbar-inner">';
     echo '<div class="bw-topbar-brand"><a href="index.php">' . bw_h(SITE_TITLE) . '</a> <span class="bw-topbar-sub">Admin</span></div>';
     echo '<nav class="bw-nav" aria-label="Admin">';
@@ -37,7 +53,7 @@ function bw_admin_nav($active = '') {
         echo '<a class="' . $cls . '" href="' . bw_h($it['href']) . '">' . bw_h($it['label']) . '</a>';
     }
     echo '</nav>';
-    echo '<div class="bw-topbar-user"><a class="bw-nav-link" href="../index.php">View site</a> <span class="bw-muted">' . bw_h($user) . '</span> <a class="bw-nav-link" href="logout.php">Log out</a></div>';
+    echo '<div class="bw-topbar-user"><a class="bw-nav-link" href="../index.php">View site</a> <span class="bw-muted">' . bw_h($display) . '</span> <a class="bw-nav-link" href="logout.php">Log out</a></div>';
     echo '</div></header>';
 }
 
@@ -50,8 +66,10 @@ function bw_user_nav($active = '') {
         'review' => array('label' => 'Review queue', 'href' => 'review.php', 'show' => hasRole('subeditor')),
         'editor' => array('label' => 'Editor queue', 'href' => 'editor.php', 'show' => hasRole('editor')),
         'archive' => array('label' => 'Archive', 'href' => 'archive.php', 'show' => hasRole('editor')),
+        'profile' => array('label' => 'Profile', 'href' => 'profile.php', 'show' => true),
         'password' => array('label' => 'Password', 'href' => 'password.php', 'show' => true),
     );
+    $display = function_exists('bw_user_display_name') ? bw_user_display_name($username) : $username;
     echo '<header class="bw-topbar"><div class="bw-topbar-inner">';
     echo '<div class="bw-topbar-brand"><a href="index.php">' . bw_h(SITE_TITLE) . '</a> <span class="bw-topbar-sub">Workspace</span></div>';
     echo '<nav class="bw-nav" aria-label="Workspace">';
@@ -61,7 +79,7 @@ function bw_user_nav($active = '') {
         echo '<a class="' . $cls . '" href="' . bw_h($it['href']) . '">' . bw_h($it['label']) . '</a>';
     }
     echo '</nav>';
-    echo '<div class="bw-topbar-user"><a class="bw-nav-link" href="../index.php">View site</a> <span class="bw-muted">' . bw_h($username) . ($role ? ' · ' . bw_h($role) : '') . '</span> <a class="bw-nav-link" href="logout.php">Log out</a></div>';
+    echo '<div class="bw-topbar-user"><a class="bw-nav-link" href="../index.php">View site</a> <span class="bw-muted">' . bw_h($display) . ($role ? ' · ' . bw_h($role) : '') . '</span> <a class="bw-nav-link" href="logout.php">Log out</a></div>';
     echo '</div></header>';
 }
 

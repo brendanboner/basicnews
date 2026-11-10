@@ -1,0 +1,140 @@
+/* ============================================================
+   Article page-turn (Admin -> Site settings)
+   Between stories, the article page turns like paper: clicking
+   "Turn the page" / "Turn back a page" curls the sheet away
+   around its spine edge, then the next story settles into
+   place. Deliberately subtle — a gentle curl, not a flip book.
+
+   Tunable via CSS custom properties (set inline on .article-main
+   by article.php from the admin settings):
+     --pt-perspective : viewing distance of the turn
+     --pt-speed       : duration of one page turn
+   ============================================================ */
+
+/* The stage: the article column carries the perspective. */
+.article-main {
+    perspective: var(--pt-perspective, 1600px);
+    perspective-origin: 50% 30%;
+}
+
+/* The sheet of paper holding the story. */
+.bw-leaf {
+    position: relative;
+    background: #ffffff;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Curl shadow along the lifting edge, darkest while turning. */
+.bw-leaf::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    background: linear-gradient(100deg,
+        rgba(0, 0, 0, 0) 52%,
+        rgba(0, 0, 0, 0.08) 72%,
+        rgba(0, 0, 0, 0.22) 100%);
+}
+
+/* Turning away toward the next story: hinged on the left/spine,
+   the page swings over and fades as it passes edge-on. */
+.bw-leaf.bw-leaf-away-next {
+    transform-origin: left center;
+    animation: bw-page-away-next var(--pt-speed, 650ms) cubic-bezier(0.5, 0.05, 0.3, 1) forwards;
+}
+.bw-leaf.bw-leaf-away-prev {
+    transform-origin: right center;
+    animation: bw-page-away-prev var(--pt-speed, 650ms) cubic-bezier(0.5, 0.05, 0.3, 1) forwards;
+}
+.bw-leaf.bw-leaf-away-next::after,
+.bw-leaf.bw-leaf-away-prev::after {
+    animation: bw-page-shadow-out var(--pt-speed, 650ms) ease-out forwards;
+}
+.bw-leaf.bw-leaf-away-prev::after {
+    transform: scaleX(-1); /* shadow lifts from the other edge */
+}
+
+@keyframes bw-page-away-next {
+    0%   { transform: rotateY(0deg); opacity: 1; }
+    75%  { opacity: 1; }
+    100% { transform: rotateY(-112deg); opacity: 0; }
+}
+@keyframes bw-page-away-prev {
+    0%   { transform: rotateY(0deg); opacity: 1; }
+    75%  { opacity: 1; }
+    100% { transform: rotateY(112deg); opacity: 0; }
+}
+@keyframes bw-page-shadow-out {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* The incoming page settles flat, with its shadow easing away. */
+.bw-leaf.bw-leaf-settle-next {
+    transform-origin: left center;
+    animation: bw-page-settle-next calc(var(--pt-speed, 650ms) * 0.7) cubic-bezier(0.2, 0.6, 0.25, 1) backwards;
+}
+.bw-leaf.bw-leaf-settle-prev {
+    transform-origin: right center;
+    animation: bw-page-settle-prev calc(var(--pt-speed, 650ms) * 0.7) cubic-bezier(0.2, 0.6, 0.25, 1) backwards;
+}
+.bw-leaf.bw-leaf-settle-next::after,
+.bw-leaf.bw-leaf-settle-prev::after {
+    animation: bw-page-shadow-in calc(var(--pt-speed, 650ms) * 0.7) ease-out backwards;
+}
+
+@keyframes bw-page-settle-next {
+    from { transform: rotateY(-13deg); }
+    to   { transform: rotateY(0deg); }
+}
+@keyframes bw-page-settle-prev {
+    from { transform: rotateY(13deg); }
+    to   { transform: rotateY(0deg); }
+}
+@keyframes bw-page-shadow-in {
+    from { opacity: 0.7; }
+    to   { opacity: 0; }
+}
+
+/* Hovering a turn link teases the turn: a faint curl. */
+@media (hover: hover) {
+    .bw-leaf.bw-leaf-hint-next,
+    .bw-leaf.bw-leaf-hint-prev {
+        transition: transform 0.45s ease-out;
+    }
+    .bw-leaf.bw-leaf-hint-next { transform: rotateY(-3deg); }
+    .bw-leaf.bw-leaf-hint-prev { transform: rotateY(3deg); }
+    .bw-leaf.bw-leaf-hint-next::after,
+    .bw-leaf.bw-leaf-hint-prev::after {
+        transition: opacity 0.45s ease-out;
+        opacity: 0.45;
+    }
+}
+
+/* Theme variants: the sheet matches the reading surface. */
+body.bw-theme-paper .bw-leaf { background: #f6f1e7; }
+body.bw-theme-dark .bw-leaf { background: #171717; }
+body.bw-theme-dark .bw-leaf::after {
+    background: linear-gradient(100deg,
+        rgba(0, 0, 0, 0) 52%,
+        rgba(0, 0, 0, 0.22) 72%,
+        rgba(0, 0, 0, 0.5) 100%);
+}
+
+/* Print: flat page, no theatrics. */
+@media print {
+    .article-main { perspective: none; }
+    .bw-leaf { transform: none !important; animation: none !important; }
+    .bw-leaf::after { display: none !important; }
+}
+
+/* Reduced motion: the effect steps aside; links still work. */
+@media (prefers-reduced-motion: reduce) {
+    .bw-leaf,
+    .bw-leaf::after { animation: none !important; transition: none !important; transform: none !important; }
+}

@@ -23,7 +23,7 @@ foreach ($userArticles as $a) { $s = $a['status'] ?? 'draft'; if ($s==='draft') 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My articles - <?php echo bw_h(SITE_TITLE); ?></title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="<?php echo bw_asset('../css/style.css'); ?>">
 </head>
 <body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
 <?php bw_user_nav('articles'); ?>
@@ -52,7 +52,7 @@ foreach ($userArticles as $a) { $s = $a['status'] ?? 'draft'; if ($s==='draft') 
                     <li>
                         <div class="file-info">
                             <strong><?php echo bw_h($a['title'] ?? $id); ?></strong>
-                            <div style="margin:6px 0 4px;"><?php echo bw_status_badge($status); ?></div>
+                            <div style="margin:6px 0 4px;"><?php echo bw_status_badge($status); ?> <?php if (!empty($a['promoted'])): ?><span class="bw-badge bw-badge-published">Front page</span><?php endif; ?></div>
                             <span style="font-size: 10pt; color:#444;">
                                 <?php if (!empty($a['date'])): ?>Created <?php echo date('Y-m-d', $a['date']); ?><?php endif; ?>
                                 <?php if (!empty($a['updated'])): ?> · Updated <?php echo date('Y-m-d H:i', $a['updated']); ?><?php endif; ?>
@@ -71,6 +71,11 @@ foreach ($userArticles as $a) { $s = $a['status'] ?? 'draft'; if ($s==='draft') 
                             <?php endif; ?>
                             <?php if (hasRole('editor') && $status === 'published'): ?>
                                 <a href="unpublish.php?id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn btn-small">Unpublish</a>
+                                <?php if (!empty($a['promoted'])): ?>
+                                <a href="promote.php?id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn btn-small">Unpromote</a>
+                                <?php else: ?>
+                                <a href="promote.php?id=<?php echo urlencode($a['fullId']); ?>&csrf_token=<?php echo urlencode(bw_csrf_token()); ?>" class="btn btn-small">Promote</a>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </li>

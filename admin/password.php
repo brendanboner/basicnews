@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change password - <?php echo bw_h(SITE_TITLE); ?></title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="<?php echo bw_asset('../css/style.css'); ?>">
 </head>
 <body class="<?php echo bw_h(bw_style_body_classes('')); ?>">
 <?php bw_admin_nav('password'); ?>
